@@ -77,7 +77,7 @@ int main ( int argc, char *argv[] )
             memset ( sndBuf, 0, SNDBUFSIZE );
             recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
 
-            /* Case list */
+			/* Case list */
             if ( strcmp ( rcvBuf, "list" ) == 0 )
             {
                 strcpy ( sndBuf, "list" );
@@ -101,11 +101,11 @@ int main ( int argc, char *argv[] )
                 send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
             }
 
-            /* Case pull */
-            else if ( strcmp ( rcvBuf, "pull" ) == 0 )
-            {
-
-            }
+			/* Case pull */
+			else if ( strcmp ( rcvBuf, "pull" ) == 0 )
+			{
+				
+			}
         }
 
         close ( clientSock );
