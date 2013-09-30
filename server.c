@@ -6,7 +6,7 @@
 #include <dirent.h>
 #include <string.h>	  /* support any string ops */
 
-#define RCVBUFSIZE 512		/* The receive buffer size */
+#define RCVBUFSIZE 5		/* The receive buffer size */
 #define SNDBUFSIZE 512		/* The send buffer size */
 #define MAXPENDING 5
 
@@ -16,6 +16,7 @@
 
 char *rcvBuf;
 char *sndBuf;
+char *fileBuf;
 
 /* The main function */
 int main ( int argc, char *argv[] )
@@ -26,7 +27,6 @@ int main ( int argc, char *argv[] )
     struct sockaddr_in changeClntAddr;		/* Client address */
     unsigned short changeServPort;		/* Server port */
     unsigned int clntLen;			/* Length of address data struct */
-
     DIR *dir;
     struct dirent *ent;
 
@@ -99,13 +99,27 @@ int main ( int argc, char *argv[] )
 
                 strcat ( sndBuf, "\0" );
                 send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
-            }
+            }	// end of list
 
             /* Case pull */
             else if ( strcmp ( rcvBuf, "pull" ) == 0 )
             {
+                memset ( sndBuf, 0, SNDBUFSIZE );
+                char dirfile[256];
+                strcat ( dirfile, "./repo/Kesha.mp3" );
+                FILE *fp = fopen ( "/home/yee/Dropbox/workspace/3251/Projects/2/repo/Kesha.mp3", "r" );
 
-            }
+                /* fopen was successful */
+                if ( fp != NULL )
+                {
+                    /* Read the file into sndBuf */
+                    while ( fread ( sndBuf, sizeof ( char ), SNDBUFSIZE, fp ) > 0 )
+                        send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
+                    fclose ( fp );
+                }
+
+
+            }	// end of pull
         }
 
         close ( clientSock );

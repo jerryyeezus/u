@@ -56,10 +56,10 @@ int main ( int argc, char *argv[] )
         send ( clientSock, input, 5, 0 );
 
         while ( recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 ) > 0 )
-        {
-            printf ( "rcvBuf = %s\n", rcvBuf );
-            memset ( &rcvBuf, 0, RCVBUFSIZE );
-        }
+		{
+			printf ( "rcvBuf = %s\n", rcvBuf );
+			memset( &rcvBuf, 0, RCVBUFSIZE);
+		}
         //if ( strncmp ( rcvBuf, "list", SNDBUFSIZE ) == 0 )
     }
 
