@@ -1,8 +1,7 @@
-.gitignore
-*.c.orig
-*.orig
 *~
+*.orig
 *.swp
 *.out
 uZic
 uZicServer
+.gitignore
