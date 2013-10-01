@@ -6,11 +6,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <openssl/evp.h>	    /* for OpenSSL EVP digest libraries/SHA256 */
 
 /* Constants */
 #define RCVBUFSIZE 512		    /* The receive buffer size */
-#define SNDBUFSIZE 512		    /* The send buffer size */
+#define SNDBUFSIZE 5		    /* The send buffer size */
 
 char *servIP = "localhost";
 
@@ -49,18 +48,33 @@ int main ( int argc, char *argv[] )
     char input[5];
     while ( 1 )
     {
-        printf ( "> " );
+        memset ( &rcvBuf, 0, RCVBUFSIZE );
+        printf ( ">> " );
         gets ( input );
 
         /* Send command to server */
         send ( clientSock, input, 5, 0 );
 
-        while ( recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 ) > 0 )
+        char receiving = 1;
+        size_t bytesRcv;
+        while ( ( bytesRcv = recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 ) ) > 0 )
         {
-            printf ( "rcvBuf = %s\n", rcvBuf );
-            memset ( &rcvBuf, 0, RCVBUFSIZE );
+            //
+
+            for ( i = 0; i < RCVBUFSIZE; i++ )
+            {
+                if ( rcvBuf[i] == '\0' )
+                {
+                    receiving = 0;
+                    break;
+                }
+            }
+
+            if ( !receiving )
+                break;
         }
-        //if ( strncmp ( rcvBuf, "list", SNDBUFSIZE ) == 0 )
+
+        printf ( "rcvBuf = %s\n", rcvBuf );
     }
 
     close ( clientSock );

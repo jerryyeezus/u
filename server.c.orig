@@ -12,8 +12,6 @@
 
 #define SERVER_DIR "~"
 
-
-
 char *rcvBuf;
 char *sndBuf;
 char *fileBuf;
@@ -98,6 +96,7 @@ int main ( int argc, char *argv[] )
                 }
 
                 strcat ( sndBuf, "\0" );
+				printf("sndBuf = %s\n", sndBuf);
                 send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
             }	// end of list
 
@@ -113,9 +112,8 @@ int main ( int argc, char *argv[] )
                 if ( fp != NULL )
                 {
                     /* Read the file into sndBuf */
-                    size_t bytesRead  ;
-						while (fread ( sndBuf, sizeof ( char ), SNDBUFSIZE, fp ) > 0 )
-                    send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
+                    while ( fread ( sndBuf, sizeof ( char ), SNDBUFSIZE, fp ) > 0 )
+                        send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
                     fclose ( fp );
                 }
 

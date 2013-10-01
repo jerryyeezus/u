@@ -12,8 +12,6 @@
 
 #define SERVER_DIR "~"
 
-
-
 char *rcvBuf;
 char *sndBuf;
 char *fileBuf;
