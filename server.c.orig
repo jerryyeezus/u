@@ -96,7 +96,6 @@ int main ( int argc, char *argv[] )
                 }
 
                 strcat ( sndBuf, "\0" );
-				printf("sndBuf = %s\n", sndBuf);
                 send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
             }	// end of list
 
@@ -106,14 +105,21 @@ int main ( int argc, char *argv[] )
                 memset ( sndBuf, 0, SNDBUFSIZE );
                 char dirfile[256];
                 strcat ( dirfile, "./repo/Kesha.mp3" );
-                FILE *fp = fopen ( "/home/yee/Dropbox/workspace/3251/Projects/2/repo/Kesha.mp3", "r" );
+                FILE *fp = fopen ( "/home/jy/Dropbox/workspace/3251/Projects/2/repo/Kesha.mp3", "r" );
+
+				/* Send file name first */
+                strcat ( sndBuf, "Kesha.mp3" );
+                send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
 
                 /* fopen was successful */
                 if ( fp != NULL )
                 {
                     /* Read the file into sndBuf */
                     while ( fread ( sndBuf, sizeof ( char ), SNDBUFSIZE, fp ) > 0 )
+                    {
+						printf("Sending\n");
                         send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
+                    }
                     fclose ( fp );
                 }
 

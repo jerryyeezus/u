@@ -55,26 +55,39 @@ int main ( int argc, char *argv[] )
         /* Send command to server */
         send ( clientSock, input, 5, 0 );
 
+        /* Get file name */
+        if ( strcmp ( input, "pull" ) == 0 )
+        {
+            recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+            printf ( "rcvBuf = %s\n", rcvBuf );
+        }
+
+        memset ( &rcvBuf, 0, RCVBUFSIZE );
         char receiving = 1;
         size_t bytesRcv;
         while ( ( bytesRcv = recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 ) ) > 0 )
         {
-            //
+            printf ( "loop\n" );
 
+            /* Check for terminator in the current buffer */
             for ( i = 0; i < RCVBUFSIZE; i++ )
             {
                 if ( rcvBuf[i] == '\0' )
                 {
+                    printf ( "i = %d\n", i );
                     receiving = 0;
                     break;
                 }
             }
+            printf ( "rcvBuf = %s\n", rcvBuf );
 
+            /* Break out of recv loop if terminator found */
             if ( !receiving )
                 break;
+
+            memset ( &rcvBuf, 0, RCVBUFSIZE );
         }
 
-        printf ( "rcvBuf = %s\n", rcvBuf );
     }
 
     close ( clientSock );
