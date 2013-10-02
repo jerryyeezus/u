@@ -10,11 +10,39 @@
 #define SNDBUFSIZE 512		/* The send buffer size */
 #define MAXPENDING 5
 
-#define SERVER_DIR "~"
+#define SERVER_DIR "./repo/"
 
 char *rcvBuf;
 char *sndBuf;
 char *fileBuf;
+
+/**
+* get_files
+*
+* @param  dir FILE pointer
+* @param  buffer Pre-allocated buffer that will be modified
+* @return buffer gets filenames
+*/
+void get_files ( DIR *dir, struct dirent *ent, char *buffer )
+{
+    if ( ( dir = opendir ( "./repo" ) ) != NULL )
+    {
+        while ( ( ent = readdir ( dir ) ) != NULL )
+        {
+
+            char *d_name = ent->d_name;
+            if ( *d_name != '.' && strcmp ( d_name, ".." ) != 0 )
+            {
+                strcat ( buffer, d_name );
+                strcat ( buffer, "\n" );
+            }
+        }
+
+        closedir ( dir );
+    }
+
+    strcat ( buffer, "\0" );
+}
 
 /* The main function */
 int main ( int argc, char *argv[] )
@@ -27,6 +55,10 @@ int main ( int argc, char *argv[] )
     unsigned int clntLen;			/* Length of address data struct */
     DIR *dir;
     struct dirent *ent;
+    char filepath[FILENAME_MAX];
+    char filename[FILENAME_MAX];
+    char serverFiles[4096];
+    char *curFile;
 
     /* Create new TCP Socket for incoming requests*/
     if ( ( serverSock = socket ( AF_INET, SOCK_STREAM, IPPROTO_TCP ) ) < 0 )
@@ -78,7 +110,6 @@ int main ( int argc, char *argv[] )
             /* Case list */
             if ( strcmp ( rcvBuf, "list" ) == 0 )
             {
-                strcpy ( sndBuf, "list" );
                 if ( ( dir= opendir ( "./repo" ) ) != NULL )
                 {
                     while ( ( ent = readdir ( dir ) ) != NULL )
@@ -102,27 +133,38 @@ int main ( int argc, char *argv[] )
             /* Case pull */
             else if ( strcmp ( rcvBuf, "pull" ) == 0 )
             {
-                memset ( sndBuf, 0, SNDBUFSIZE );
-                char dirfile[256];
-                strcat ( dirfile, "./repo/Kesha.mp3" );
-                FILE *fp = fopen ( "/home/jy/Dropbox/workspace/3251/Projects/2/repo/Kesha.mp3", "r" );
+                /* Get array of file names */
+                get_files ( dir, ent, serverFiles );
 
-                /* Send file name first */
-                strcat ( sndBuf, "Kesha.mp3" );
-                send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
-
-                /* fopen was successful */
-                if ( fp != NULL )
+                curFile = strtok ( serverFiles, "\n" );
+                while ( curFile )
                 {
-                    /* Read the file into sndBuf */
-                    while ( fread ( sndBuf, sizeof ( char ), SNDBUFSIZE, fp ) > 0 )
-                    {
-                        send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
-                        memset ( sndBuf, 0, SNDBUFSIZE );
-                    }
+                    memset ( sndBuf, 0, SNDBUFSIZE );
+                    memset ( filename, 0, FILENAME_MAX );
+                    memset ( filepath, 0, FILENAME_MAX );
 
-                    send ( clientSock, "\0", 1, 0 );
-                    fclose ( fp );
+                    strcat ( filename, curFile ); // TODO
+                    strcat ( filepath, SERVER_DIR );
+                    strcat ( filepath, filename );
+                    FILE *fp = fopen ( filepath, "r" );
+
+                    /* Send file name first */
+                    strcat ( sndBuf, filename );
+                    send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
+
+                    if ( fp != NULL )
+                    {
+                        /* Read the file into sndBuf */
+                        while ( fread ( sndBuf, sizeof ( char ), SNDBUFSIZE, fp ) > 0 )
+                        {
+                            send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
+                            memset ( sndBuf, 0, SNDBUFSIZE );
+                        }
+
+                        /* Designate end of file */
+                        send ( clientSock, "\0", 1, 0 );
+                        fclose ( fp );
+                    }
                 }
 
 
