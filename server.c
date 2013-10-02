@@ -118,7 +118,10 @@ int main ( int argc, char *argv[] )
                     while ( fread ( sndBuf, sizeof ( char ), SNDBUFSIZE, fp ) > 0 )
                     {
                         send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
+                        memset ( sndBuf, 0, SNDBUFSIZE );
                     }
+
+                    send ( clientSock, "\0", 1, 0 );
                     fclose ( fp );
                 }
 

@@ -11,6 +11,8 @@
 #define RCVBUFSIZE 512		    /* The receive buffer size */
 #define SNDBUFSIZE 5		    /* The send buffer size */
 
+#define UZIC_DIR "./my_uZic/"
+
 char *servIP = "localhost";
 
 /* The main function */
@@ -19,8 +21,11 @@ int main ( int argc, char *argv[] )
     int clientSock;		    /* socket descriptor */
     struct sockaddr_in serv_addr;   /* The server address */
 
+    FILE *fp;
+
     char sndBuf[SNDBUFSIZE];
     char rcvBuf[RCVBUFSIZE];
+    char curFile[FILENAME_MAX];
 
     int i;			    /* Counter Value */
 
@@ -45,7 +50,7 @@ int main ( int argc, char *argv[] )
     }
 
     printf ( "Welcome to uZic! Type list, diff, pull to proceed.\n" );
-    char input[5];
+    char input[SNDBUFSIZE];
     while ( 1 )
     {
         memset ( &rcvBuf, 0, RCVBUFSIZE );
@@ -53,13 +58,15 @@ int main ( int argc, char *argv[] )
         gets ( input );
 
         /* Send command to server */
-        send ( clientSock, input, 5, 0 );
+        send ( clientSock, input, SNDBUFSIZE, 0 );
 
         /* Get file name */
         if ( strcmp ( input, "pull" ) == 0 )
         {
-            recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
-            printf ( "rcvBuf = %s\n", rcvBuf );
+            strcat ( rcvBuf, UZIC_DIR );
+            recv ( clientSock, rcvBuf + strlen ( UZIC_DIR ), RCVBUFSIZE, 0 );
+            strcpy ( curFile, rcvBuf );
+            fp = fopen ( curFile, "w" );
         }
 
         memset ( &rcvBuf, 0, RCVBUFSIZE );
@@ -67,26 +74,33 @@ int main ( int argc, char *argv[] )
         size_t bytesRcv;
         while ( ( bytesRcv = recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 ) ) > 0 )
         {
-            printf ( "loop\n" );
 
             /* Check for terminator in the current buffer */
             for ( i = 0; i < RCVBUFSIZE; i++ )
             {
                 if ( rcvBuf[i] == '\0' )
                 {
-                    printf ( "i = %d\n", i );
                     receiving = 0;
                     break;
                 }
             }
-            printf ( "rcvBuf = %s\n", rcvBuf );
+
+            fwrite ( rcvBuf, sizeof ( char ), bytesRcv, fp );
 
             /* Break out of recv loop if terminator found */
             if ( !receiving )
+            {
+                if ( fp != NULL )
+                {
+                    fclose ( fp );
+                    fp = NULL;
+                }
                 break;
+            }
 
             memset ( &rcvBuf, 0, RCVBUFSIZE );
         }
+
 
     }
 
