@@ -21,7 +21,7 @@ int main ( int argc, char *argv[] )
     int clientSock;		    /* socket descriptor */
     struct sockaddr_in serv_addr;   /* The server address */
 
-    FILE *fp;
+    FILE *fp = NULL;
 
     char sndBuf[SNDBUFSIZE];
     char rcvBuf[RCVBUFSIZE];
@@ -93,9 +93,27 @@ int main ( int argc, char *argv[] )
                 if ( fp != NULL )
                 {
                     fclose ( fp );
-                    fp = NULL;
+
+                    /* Get next file name if available */
+                    memset ( &rcvBuf, 0, RCVBUFSIZE );
+                    memset ( &curFile, 0, FILENAME_MAX );
+                    recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+
+                    if ( rcvBuf[0] !=  '\0' )
+                    {
+                        strcat ( curFile, UZIC_DIR );
+                        strcat ( curFile, rcvBuf );
+                        printf ( "curFile = %s\n", curFile );
+                        fp = fopen ( curFile, "w" );
+                    }
+                    else
+                    {
+                        printf ( "File transfer complete.\n" );
+                        break;
+                    }
                 }
-                break;
+                else
+                    break;
             }
 
             memset ( &rcvBuf, 0, RCVBUFSIZE );
