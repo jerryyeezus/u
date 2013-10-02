@@ -134,16 +134,18 @@ int main ( int argc, char *argv[] )
             else if ( strcmp ( rcvBuf, "pull" ) == 0 )
             {
                 /* Get array of file names */
-                get_files ( dir, ent, serverFiles );
+                //get_files ( dir, ent, serverFiles );
+                strcpy ( serverFiles, "Kesha.mp3\nMiley.mp3\n" ); // TODO get files from diff!
 
                 curFile = strtok ( serverFiles, "\n" );
-                while ( curFile )
+                while ( curFile != NULL )
                 {
+                    printf ( "curFile = %s\n", curFile );
                     memset ( sndBuf, 0, SNDBUFSIZE );
                     memset ( filename, 0, FILENAME_MAX );
                     memset ( filepath, 0, FILENAME_MAX );
 
-                    strcat ( filename, curFile ); // TODO
+                    strcat ( filename, curFile );
                     strcat ( filepath, SERVER_DIR );
                     strcat ( filepath, filename );
                     FILE *fp = fopen ( filepath, "r" );
@@ -163,10 +165,14 @@ int main ( int argc, char *argv[] )
 
                         /* Designate end of file */
                         send ( clientSock, "\0", 1, 0 );
+
                         fclose ( fp );
                     }
-                }
 
+                    /* Get next one */
+                    curFile = strtok ( NULL, "\n" );
+                }
+                printf ( "Done sending files.\n" );
 
             }	// end of pull
         }
