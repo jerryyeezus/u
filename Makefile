@@ -18,10 +18,10 @@ endif
 all: client server 
 
 client: client.c
-	$(CC) musicEncoding.c client.c -o uZic
+	$(CC) musicEncoding.c client.c -o uZic -g
 
 server: server.c
-	$(CC) musicEncoding.c server.c -o uZicServer
+	$(CC) musicEncoding.c server.c -o uZicServer -g
 
 clean:
 	rm -f client server *.o

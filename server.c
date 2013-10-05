@@ -61,9 +61,9 @@ int main ( int argc, char *argv[] )
     char serverFiles[4096];
     char *curFile;
     MusicInfo rcvInfo;
-    memset(&rcvInfo, 0, sizeof(rcvInfo));
+    memset ( &rcvInfo, 0, sizeof ( rcvInfo ) );
     MusicInfo sndInfo;
-    memset(&sndInfo, 0, sizeof(sndInfo));
+    memset ( &sndInfo, 0, sizeof ( sndInfo ) );
 
     /* Create new TCP Socket for incoming requests*/
     if ( ( serverSock = socket ( AF_INET, SOCK_STREAM, IPPROTO_TCP ) ) < 0 )
@@ -92,9 +92,6 @@ int main ( int argc, char *argv[] )
         exit ( 1 );
     }
 
-    //char *rcvBuf = ( char * ) malloc ( RCVBUFSIZE );
-    //char *sndBuf = ( char * ) malloc ( SNDBUFSIZE );
-
     /* Loop server forever*/
     while ( 1 )
     {
@@ -109,28 +106,21 @@ int main ( int argc, char *argv[] )
         int test = 0;
         while ( 1 )
         {
+            memset ( &sndInfo, 0, sizeof ( sndInfo ) );
             memset ( rcvBuf, 0, RCVBUFSIZE );
             memset ( sndBuf, 0, SNDBUFSIZE );
-	    memset(fileBuf, 0, FILEBUFSIZE);
+            memset ( fileBuf, 0, FILEBUFSIZE );
             recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
 
             /* Case list */
 
-    	    if(Decode(rcvBuf, RCVBUFSIZE, &rcvInfo)) {
-		printf("Request Type: %s\n", rcvInfo.requestType);
-	    }
-	    printf("Strcmp with list: %d\n", strcmp(rcvInfo.requestType, "list"));
-	    printf("Strcmp with diff: %d\n", strcmp(rcvInfo.requestType, "diff"));
-	    printf("Strcmp with pull: %d\n", strcmp(rcvInfo.requestType, "pull"));
-	    printf("Request Type: %s\n", rcvInfo.requestType);
-	    printf("Song Names: %s\n", rcvInfo.songNames);
-	    printf("Song IDs: %s\n", rcvInfo.songIDs);
-	    printf("End of file? %c\n", rcvInfo.eof);
-	    printf("Terminate? %c\n", rcvInfo.terminate);
+            if ( Decode ( rcvBuf, RCVBUFSIZE, &rcvInfo ) )
+            {
+                printf ( "Request Type: %s\n", rcvInfo.requestType );
+            }
 
             if ( strcmp ( rcvInfo.requestType, "list" ) == 0 )
             {
-		printf("Inside if statement\n");
                 if ( ( dir= opendir ( "./repo" ) ) != NULL )
                 {
                     while ( ( ent = readdir ( dir ) ) != NULL )
@@ -147,21 +137,19 @@ int main ( int argc, char *argv[] )
                     closedir ( dir );
                 }
 
-                //strcat ( sndBuf, "\0" );
-		strcpy(sndInfo.requestType, rcvInfo.requestType);
-	        strcpy(sndInfo.songIDs, " ");
-	        strcpy(sndInfo.fileData, " ");
-		sndInfo.eof = 1;
-		sndInfo.terminate = 1;
-		size_t responseSize = Encode(&sndInfo, sndBuf, SNDBUFSIZE);
-		printf("sndBuf: %s\n", sndBuf);
+                strcpy ( sndInfo.requestType, rcvInfo.requestType );
+                strcpy ( sndInfo.songIDs, " " );
+                strcpy ( sndInfo.fileData, " " );
+                sndInfo.eof = 1;
+                sndInfo.terminate = 1;
+                size_t responseSize = Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
                 send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
             }	// end of list
 
 
-	    else if ( strcmp ( rcvInfo.requestType, "diff" ) == 0 )
+            else if ( strcmp ( rcvInfo.requestType, "diff" ) == 0 )
             {
-                if ( ( dir= opendir ( "./repo" ) ) != NULL )
+                if ( ( dir = opendir ( "./repo" ) ) != NULL )
                 {
                     while ( ( ent = readdir ( dir ) ) != NULL )
                     {
@@ -177,65 +165,55 @@ int main ( int argc, char *argv[] )
                     closedir ( dir );
                 }
 
-                //strcat ( sndBuf, "\0" );
-		strcpy(sndInfo.requestType, rcvInfo.requestType);
-	        strcpy(sndInfo.songIDs, " ");
-	        strcpy(sndInfo.fileData, " ");
-		sndInfo.eof = 1;
-		sndInfo.terminate = 1;
-		size_t responseSize = Encode(&sndInfo, sndBuf, SNDBUFSIZE);
-		printf("sndBuf: %s\n", sndBuf);
+                strcpy ( sndInfo.requestType, rcvInfo.requestType );
+                strcpy ( sndInfo.songIDs, " " );
+                strcpy ( sndInfo.fileData, " " );
+                sndInfo.eof = 1;
+                sndInfo.terminate = 1;
+                size_t responseSize = Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
                 send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
-            }	// end of list
-	    /*else if ( strcmp ( rcvInfo.requestType, "diff" ) == 0 ) {
-		printf("Diff requested\n");
-		fflush(stdout);
-		get_files(dir, ent, serverFiles);
-		
-	    }*/
+            }	// end of diff
 
             /* Case pull */
             else if ( strcmp ( rcvInfo.requestType, "pull" ) == 0 )
             {
-                /* Get array of file names */
-                get_files ( dir, ent, serverFiles );
+                memset ( &sndInfo, 0, sizeof ( sndInfo ) );
+                strcpy ( sndInfo.requestType, rcvInfo.requestType );
+                strcpy ( sndInfo.songIDs, rcvInfo.songIDs );
 
-                curFile = strtok ( serverFiles, "\n" );
-                while ( curFile != NULL )
+                curFile = strtok ( rcvInfo.songIDs, "|" );
+                while ( curFile )
                 {
-                    printf ( "curFile = %s\n", curFile );
-                    memset ( sndBuf, 0, SNDBUFSIZE );
-                    memset ( filename, 0, FILENAME_MAX );
-                    memset ( filepath, 0, FILENAME_MAX );
+                    char curDir[FILENAME_MAX];
+                    strcpy ( curDir, SERVER_DIR );
+                    strcat ( curDir, curFile );
 
-                    strcat ( filename, curFile );
-                    strcat ( filepath, SERVER_DIR );
-                    strcat ( filepath, filename );
-                    FILE *fp = fopen ( filepath, "r" );
-
-                    /* Send file name first */
-                    strcat ( sndBuf, filename );
-                    send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
-
-                    if ( fp != NULL )
+                    FILE *fp = fopen ( curDir, "r" );
+                    size_t bytesRead = 0;
+                    while ( ( bytesRead = fread ( sndInfo.fileData, 1, 511, fp ) ) > 0 )
                     {
-                        /* Read the file into sndBuf */
-                        while ( fread ( sndBuf, sizeof ( char ), SNDBUFSIZE, fp ) > 0 )
+                        if ( bytesRead < 511 )
                         {
-                            send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
-                            memset ( sndBuf, 0, SNDBUFSIZE );
+                            sndInfo.eof = 1;
                         }
 
-                        /* Designate end of file */
-                        send ( clientSock, "\0", 1, 0 );
+                        sndInfo.fileData[bytesRead + 1] = '\0';
+                        strcpy ( sndInfo.songNames, curFile );
 
-                        fclose ( fp );
-                    }
+                        /* Encode and send file chunk */
+                        Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
+                        send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
+                    }	// end of current file
 
-                    /* Get next one */
-                    curFile = strtok ( NULL, "\n" );
+                    fclose ( fp );
+                    curFile = strtok ( NULL, "|" );
                 }
-                printf ( "Done sending files.\n" );
+
+                /* No more files at this point */
+                printf ( "All files done.\n" );
+                sndInfo.terminate = 1;
+                Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
+                send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
 
             }	// end of pull
         }
