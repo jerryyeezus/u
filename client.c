@@ -10,7 +10,7 @@
 #include "musicProtocol.h"	/* declarations of necessary functions and data types */
 
 /* Constants */
-#define RCVBUFSIZE 512		    /* The receive buffer size */
+#define RCVBUFSIZE 2048		    /* The receive buffer size */
 #define SNDBUFSIZE 512		    /* The send buffer size */
 #define TMPBUFSIZE 512		    /* Size for temporary buffers */
 
@@ -86,7 +86,7 @@ int main ( int argc, char *argv[] )
         /* Send command to server */
         send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
 
-        /* Get file name */
+        /* Get server response */
         recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
         if ( Decode ( rcvBuf, RCVBUFSIZE, &rcvInfo ) )
             printf ( "Response received for request: %s\n\n", rcvInfo.requestType );
@@ -186,16 +186,18 @@ int main ( int argc, char *argv[] )
 
             while ( 1 )
             {
-                if ( rcvInfo.terminate )
+                if ( rcvInfo.terminate ) // TODO WHY IS THIS 1 NOW WTF!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     break;
 
                 memset ( filepath, 0, sizeof ( filepath ) );
-                strcpy ( filepath, UZIC_DIR ); // filepath = "./my_uZic/"
-                strcpy ( filepath, rcvInfo.songNames );
+                strcpy ( filepath, UZIC_DIR );
+                strcat ( filepath, rcvInfo.songNames );
 
                 if ( fp == NULL )
                     fp = fopen ( filepath, "w" );
 
+                printf ( "Writing\n" );
+                printf ( "rcvInfo.fileData = %s\n", rcvInfo.fileData );
                 fwrite ( rcvInfo.fileData, 1, strlen ( rcvInfo.fileData ), fp );
 
                 if ( rcvInfo.eof )

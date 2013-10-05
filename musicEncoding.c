@@ -6,7 +6,9 @@ size_t Encode ( const MusicInfo *music, uint8_t *outBuf, const size_t bufSize )
 {
     uint8_t *bufPtr = outBuf;
     long size = ( size_t ) bufSize;
-    int musicPrint = snprintf ( ( char * ) bufPtr, size, "%s\t%s\t%s\t%s\t%c\t%c\n", music->requestType, music->songNames, music->songIDs, music->fileData, music->eof, music->terminate );
+    int musicPrint = snprintf ( ( char * ) bufPtr, size, "%s\t%s\t%s\t%s\t%d\t%d\n", music->requestType, music->songNames, music->songIDs, music->fileData, music->eof, music->terminate );
+
+    printf ( "bufPtr = %s\n", bufPtr );
     bufPtr += musicPrint;
     size -= musicPrint;
     return ( size_t ) ( bufPtr - outBuf );
@@ -49,15 +51,14 @@ bool Decode ( uint8_t *inBuf, const size_t mSize, MusicInfo *music )
     if ( token == NULL )
         return false;
 
-    music->eof = token[0];
-    //printf("EOF? %d\n", token[0]);
+    music->eof = token[0] == 49 ? 1 : 0;
     printf ( "music->eof = %d\n", music->eof );
 
     token = strtok ( NULL, DELIM_INFO );
     if ( token == NULL )
         return false;
 
-    music->terminate = token[0];
+    music->terminate = token[0] == 49? 1 : 0;
     printf ( "music->terminate = %d\n", music->terminate );
     //printf("Terminate? %d\n", token[0]);
 

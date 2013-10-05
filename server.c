@@ -8,7 +8,7 @@
 #include "musicProtocol.h"	/* declarations of necessary functions and data types */
 
 #define RCVBUFSIZE 512		/* The receive buffer size */
-#define SNDBUFSIZE 512		/* The send buffer size */
+#define SNDBUFSIZE 2048		/* The send buffer size */
 #define FILEBUFSIZE 512		/* The file buffer size */
 #define MAXPENDING 5
 
@@ -187,6 +187,8 @@ int main ( int argc, char *argv[] )
                     char curDir[FILENAME_MAX];
                     strcpy ( curDir, SERVER_DIR );
                     strcat ( curDir, curFile );
+                    sndInfo.eof = 0;
+                    sndInfo.terminate = 0;
 
                     FILE *fp = fopen ( curDir, "r" );
                     size_t bytesRead = 0;
@@ -197,11 +199,13 @@ int main ( int argc, char *argv[] )
                             sndInfo.eof = 1;
                         }
 
+                        /* null char appended for strlen */
                         sndInfo.fileData[bytesRead + 1] = '\0';
                         strcpy ( sndInfo.songNames, curFile );
 
                         /* Encode and send file chunk */
-                        Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
+                        Encode ( &sndInfo, sndBuf, SNDBUFSIZE ); // TODO eof NOT BEING ENCODED CORRECTLY
+
                         send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
                     }	// end of current file
 
