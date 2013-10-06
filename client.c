@@ -18,70 +18,6 @@
 
 char *servIP = "localhost";
 
-bool getDiff(char* diffBuf, MusicInfo serverInfo) {
-
-    //Initialize buffer pointer for updating diffBuf
-    char* bufPtr = diffBuf;
-
-    //Set up struct for local file info
-    MusicInfo clientInfo;
-    memset(&clientInfo, 0, sizeof(clientInfo));
-    strcpy(clientInfo.requestType, serverInfo.requestType);
-    strcpy(clientInfo.songIDs, " ");
-    strcpy(clientInfo.fileData, " ");
-    clientInfo.eof = 1;
-    clientInfo.terminate = 1;
-
-    //Get local file names
-    DIR *dir;
-    struct dirent *ent;
-    
-    if ( ( dir = opendir ( UZIC_DIR ) ) != NULL ) {
-     	while ( ( ent = readdir ( dir ) ) != NULL ) {
-	    char *d_name = ent->d_name;
-	    if ( *d_name != '.' && strcmp ( d_name, ".." ) != 0 ) {
-	    	strcat ( clientInfo.songNames, d_name );
-            	strcat ( clientInfo.songNames, "|" );
-            }
-    	}
-    	closedir ( dir );
-    }
-
-    //Initialize all buffers for strtok
-    char tmpBuf1[TMPBUFSIZE];
-    char tmpBuf2[TMPBUFSIZE];
-    char* tokBuf1;
-    char* tokBuf2;
-    char* token1;
-    char* token2;
-    int match = 0;
-    memset(&tmpBuf1, 0, sizeof(tmpBuf1));
-    memset(&tmpBuf2, 0, sizeof(tmpBuf2));
-    memset(&tokBuf1, 0, sizeof(tokBuf1));
-    memset(&tokBuf2, 0, sizeof(tokBuf2));
-
-    strcpy(tmpBuf1, serverInfo.songNames);
-	    
-    //Iterate through client & server songs, checking for matches and placing differences in a delimited string
-    for(token1 = strtok_r((char *) tmpBuf1, DELIM_SONG, &tokBuf1); token1; token1 = strtok_r(NULL, DELIM_SONG, &tokBuf1)) {
-	memset(&tmpBuf2, 0, sizeof(tmpBuf2));
-	strcpy(tmpBuf2, clientInfo.songNames);
-	for(token2 = strtok_r((char *) tmpBuf2, DELIM_SONG, &tokBuf2); token2; token2 = strtok_r(NULL, DELIM_SONG, &tokBuf2)) {
-	    if(strcmp(token1, token2) == 0) {
-		match = 1;
-		break;
-	    }
-	}
-	if(match == 0) {
-	    strcat(bufPtr, token1);
-	    strcat(bufPtr, "|");
-	}
-	match = 0;
-    }
-    return true;
-}
-
-
 /* The main function */
 int main ( int argc, char *argv[] )
 {
@@ -104,10 +40,10 @@ int main ( int argc, char *argv[] )
 
     memset ( &sndBuf, 0, SNDBUFSIZE );
     memset ( &rcvBuf, 0, RCVBUFSIZE );
-    memset ( diffBuf, 0, TMPBUFSIZE );
     memset ( &sndInfo, 0, sizeof ( sndInfo ) );
     memset ( &rcvInfo, 0, sizeof ( rcvInfo ) );
     memset ( &clientInfo, 0, sizeof ( clientInfo ) );
+    memset ( diffBuf, 0, TMPBUFSIZE );
 
     /* Create a new TCP socket*/
     clientSock = socket ( AF_INET, SOCK_STREAM, IPPROTO_TCP );
@@ -133,6 +69,9 @@ int main ( int argc, char *argv[] )
         memset ( &rcvBuf, 0, RCVBUFSIZE );
         memset ( &sndBuf, 0, SNDBUFSIZE );
         memset ( input, 0, SNDBUFSIZE );
+        memset ( &sndInfo, 0, sizeof ( sndInfo ) );
+        memset ( &rcvInfo, 0, sizeof ( rcvInfo ) );
+        memset ( sndInfo.fileData, 0, 512 );
         printf ( ">> " );
         gets ( input );
         if ( input )
@@ -141,9 +80,9 @@ int main ( int argc, char *argv[] )
             strcpy ( sndInfo.songNames, " " );
             //strcpy ( sndInfo.songIDs, " " );
             strcpy ( sndInfo.songIDs, diffBuf );
-            strcpy ( sndInfo.fileData, " " );
             sndInfo.eof = 1;
             sndInfo.terminate = 1;
+            printf ( "Encoding my shit...\n" );
             size_t reqSize = Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
         }
 
@@ -167,21 +106,77 @@ int main ( int argc, char *argv[] )
         }
 
         /* Case diff */
-        else if ( strcmp ( rcvInfo.requestType, "diff" ) == 0 )
+        if ( strcmp ( rcvInfo.requestType, "diff" ) == 0 )
         {
-            
-	    //Print out list of diffs
-	    memset(&diffBuf, 0, sizeof(diffBuf));
-	    if(getDiff(diffBuf, rcvInfo)) {
-		char tmpBuf[TMPBUFSIZE];
-		char* token;
-		printf("diffBuf: %s\n", diffBuf);
-		memset (&tmpBuf, 0, sizeof(tmpBuf));
-		strcpy (tmpBuf, diffBuf);
-		printf ("\nOn server but not client:\n");
-		for ( token = strtok ( tmpBuf, "|" ); token; token = strtok ( NULL, "|" ) )
-		    printf ( "%s\n", token );
-	    }
+            //Set up struct for local file info
+            strcpy ( clientInfo.requestType, rcvInfo.requestType );
+            strcpy ( clientInfo.songIDs, " " );
+            //strcpy ( clientInfo.fileData, " " );
+            clientInfo.eof = 1;
+            clientInfo.terminate = 1;
+
+            //Get local file names
+            if ( ( dir= opendir ( UZIC_DIR ) ) != NULL )
+            {
+                while ( ( ent = readdir ( dir ) ) != NULL )
+                {
+                    char *d_name = ent->d_name;
+                    if ( *d_name != '.' && strcmp ( d_name, ".." ) != 0 )
+                    {
+                        strcat ( clientInfo.songNames, d_name );
+                        strcat ( clientInfo.songNames, "|" );
+                    }
+                }
+                closedir ( dir );
+            }
+
+            //Initialize all buffers for strtok
+            char tmpBuf1[TMPBUFSIZE];
+            char* token1;
+            char* tokBuf1;
+            char tmpBuf2[TMPBUFSIZE];
+            char* token2;
+            char* tokBuf2;
+            char matchBuf[TMPBUFSIZE];
+            int match = 0;
+            memset ( &tmpBuf1, 0, sizeof ( tmpBuf1 ) );
+            memset ( &tmpBuf2, 0, sizeof ( tmpBuf2 ) );
+            memset ( &matchBuf, 0, sizeof ( matchBuf ) );
+            memset ( &diffBuf, 0, sizeof ( diffBuf ) );
+            memset ( &tokBuf1, 0, sizeof ( tokBuf1 ) );
+            memset ( &tokBuf1, 0, sizeof ( tokBuf2 ) );
+            strcpy ( tmpBuf1, rcvInfo.songNames );
+
+            //Iterate through client & server songs, checking for matches and placing differences in a delimited string
+            for ( token1 = strtok_r ( ( char * ) tmpBuf1, DELIM_SONG, &tokBuf1 ); token1; token1 = strtok_r ( NULL, DELIM_SONG, &tokBuf1 ) )
+            {
+                memset ( &tmpBuf2, 0, sizeof ( tmpBuf2 ) );
+                strcpy ( tmpBuf2, clientInfo.songNames );
+                for ( token2 = strtok_r ( ( char * ) tmpBuf2, DELIM_SONG, &tokBuf2 ); token2; token2 = strtok_r ( NULL, DELIM_SONG, &tokBuf2 ) )
+                {
+                    if ( strcmp ( token1, token2 ) == 0 )
+                    {
+                        strcat ( matchBuf, token1 );
+                        strcat ( matchBuf, "|" );
+                        match = 1;
+                        break;
+                    }
+                }
+                if ( match == 0 )
+                {
+                    strcat ( diffBuf, token1 );
+                    strcat ( diffBuf, "|" );
+                }
+
+                match = 0;
+            }
+
+            //Print out list of diffs
+            memset ( &tmpBuf2, 0, sizeof ( tmpBuf2 ) );
+            strcpy ( tmpBuf2, diffBuf );
+            printf ( "\nOn server but not client:\n" );
+            for ( token2 = strtok ( tmpBuf2, "|" ); token2; token2 = strtok ( NULL, "|" ) )
+                printf ( "%s\n", token2 );
         }
 
         /* Case PULL */
@@ -209,6 +204,11 @@ int main ( int argc, char *argv[] )
 
                 if ( rcvInfo.terminate )
                     break;
+                memset ( &sndBuf, 0, SNDBUFSIZE );
+                memset ( &rcvBuf, 0, RCVBUFSIZE );
+                memset ( &sndInfo, 0, sizeof ( sndInfo ) );
+                memset ( &rcvInfo, 0, sizeof ( rcvInfo ) );
+                memset ( rcvInfo.fileData, 0, 512 );
 
                 recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
                 Decode ( rcvBuf, RCVBUFSIZE, &rcvInfo );
@@ -225,6 +225,10 @@ int main ( int argc, char *argv[] )
             printf ( "Derp. Something screwed up. \n" );
         }
 
+        memset ( &sndBuf, 0, SNDBUFSIZE );
+        memset ( &rcvBuf, 0, RCVBUFSIZE );
+        memset ( &sndInfo, 0, sizeof ( sndInfo ) );
+        memset ( &rcvInfo, 0, sizeof ( rcvInfo ) );
     }
 
     close ( clientSock );

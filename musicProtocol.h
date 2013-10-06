@@ -34,4 +34,3 @@ enum
 int GetNextMsg ( FILE *in, uint8_t *buf, size_t bufSize );
 size_t Encode ( const MusicInfo *music, uint8_t *outBuf, const size_t bufSize );
 bool Decode ( uint8_t *inBuf, const size_t mSize, MusicInfo *music );
-bool getDiff(char* diffBuf, MusicInfo serverInfo);

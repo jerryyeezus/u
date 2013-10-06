@@ -139,7 +139,7 @@ int main ( int argc, char *argv[] )
 
                 strcpy ( sndInfo.requestType, rcvInfo.requestType );
                 strcpy ( sndInfo.songIDs, " " );
-                strcpy ( sndInfo.fileData, " " );
+                //strcpy ( sndInfo.fileData, " " );
                 sndInfo.eof = 1;
                 sndInfo.terminate = 1;
                 size_t responseSize = Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
@@ -167,7 +167,7 @@ int main ( int argc, char *argv[] )
 
                 strcpy ( sndInfo.requestType, rcvInfo.requestType );
                 strcpy ( sndInfo.songIDs, " " );
-                strcpy ( sndInfo.fileData, " " );
+                //strcpy ( sndInfo.fileData, " " );
                 sndInfo.eof = 1;
                 sndInfo.terminate = 1;
                 size_t responseSize = Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
@@ -194,7 +194,6 @@ int main ( int argc, char *argv[] )
                     size_t bytesRead = 0;
                     while ( ( bytesRead = fread ( sndInfo.fileData, 1, 512, fp ) ) > 0 )
                     {
-
                         if ( bytesRead < 512 )
                         {
                             sndInfo.eof = 1;

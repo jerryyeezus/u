@@ -7,8 +7,27 @@ size_t Encode ( const MusicInfo *music, uint8_t *outBuf, const size_t bufSize )
     uint8_t *bufPtr = outBuf;
     long size = ( size_t ) bufSize;
     int musicPrint = snprintf ( ( char * ) bufPtr, size, "%s\t%s\t%s\t%d\t%d\t%d\t", music->requestType, music->songNames, music->songIDs, music->eof, music->terminate, music->dataLen );
+    int i;
+    int len = strlen ( bufPtr );
+
+    if ( strcmp ( "pull", music->requestType ) == 0 )
+    {
+        for ( i = 0; i < 512; i++ )
+        {
+            //    printf ( "%02X", music->fileData[i] );
+        }
+    }
+
+
     memcpy ( strlen ( bufPtr ) + bufPtr, music->fileData, music->dataLen );
-    strcat ( bufPtr, "\n" );
+
+    if ( strcmp ( "pull", music->requestType ) == 0 )
+    {
+        for ( i = 0; i < 512; i++ )
+        {
+            printf ( "%02X", bufPtr[i + len] );
+        }
+    }
 
     bufPtr += musicPrint;
     size -= musicPrint;
