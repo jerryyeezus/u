@@ -226,6 +226,24 @@ int main ( int argc, char *argv[] )
                 send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
 
             }	// end of pull
+	    else if ( strcmp ( rcvInfo.requestType, "leave" ) == 0 )
+            {		
+		printf("Closing connection with client on socket %i\n", clientSock);
+		strcpy ( sndInfo.requestType, rcvInfo.requestType );
+		strcpy ( sndInfo.songNames, " " );
+                strcpy ( sndInfo.songIDs, " " );
+                sndInfo.eof = 1;
+                sndInfo.terminate = 1;
+		sndInfo.dataLen = 0;
+		strcpy ( sndInfo.fileData, " " );
+                size_t responseSize = Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
+                send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
+		close(clientSock);
+		break;
+		//free(rcvBuf);
+		//free(sndBuf);
+		//free(sndInfo);
+	    }
         }
 
         close ( clientSock );
