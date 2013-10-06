@@ -10,24 +10,7 @@ size_t Encode ( const MusicInfo *music, uint8_t *outBuf, const size_t bufSize )
     int i;
     int len = strlen ( bufPtr );
 
-    if ( strcmp ( "pull", music->requestType ) == 0 )
-    {
-        for ( i = 0; i < 512; i++ )
-        {
-            //    printf ( "%02X", music->fileData[i] );
-        }
-    }
-
-
     memcpy ( strlen ( bufPtr ) + bufPtr, music->fileData, music->dataLen );
-
-    if ( strcmp ( "pull", music->requestType ) == 0 )
-    {
-        for ( i = 0; i < 512; i++ )
-        {
-            printf ( "%02X", bufPtr[i + len] );
-        }
-    }
 
     bufPtr += musicPrint;
     size -= musicPrint;
