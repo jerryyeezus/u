@@ -18,33 +18,37 @@
 
 char *servIP = "localhost";
 
-bool getDiff(char* diffBuf, MusicInfo serverInfo) {
+bool getDiff ( char* diffBuf, MusicInfo serverInfo )
+{
 
     //Initialize buffer pointer for updating diffBuf
     char* bufPtr = diffBuf;
 
     //Set up struct for local file info
     MusicInfo clientInfo;
-    memset(&clientInfo, 0, sizeof(clientInfo));
-    strcpy(clientInfo.requestType, serverInfo.requestType);
-    strcpy(clientInfo.songIDs, " ");
-    strcpy(clientInfo.fileData, " ");
+    memset ( &clientInfo, 0, sizeof ( clientInfo ) );
+    strcpy ( clientInfo.requestType, serverInfo.requestType );
+    strcpy ( clientInfo.songIDs, " " );
+    strcpy ( clientInfo.fileData, " " );
     clientInfo.eof = 1;
     clientInfo.terminate = 1;
 
     //Get local file names
     DIR *dir;
     struct dirent *ent;
-    
-    if ( ( dir = opendir ( UZIC_DIR ) ) != NULL ) {
-     	while ( ( ent = readdir ( dir ) ) != NULL ) {
-	    char *d_name = ent->d_name;
-	    if ( *d_name != '.' && strcmp ( d_name, ".." ) != 0 ) {
-	    	strcat ( clientInfo.songNames, d_name );
-            	strcat ( clientInfo.songNames, "|" );
+
+    if ( ( dir = opendir ( UZIC_DIR ) ) != NULL )
+    {
+        while ( ( ent = readdir ( dir ) ) != NULL )
+        {
+            char *d_name = ent->d_name;
+            if ( *d_name != '.' && strcmp ( d_name, ".." ) != 0 )
+            {
+                strcat ( clientInfo.songNames, d_name );
+                strcat ( clientInfo.songNames, "|" );
             }
-    	}
-    	closedir ( dir );
+        }
+        closedir ( dir );
     }
 
     //Initialize all buffers for strtok
@@ -55,28 +59,32 @@ bool getDiff(char* diffBuf, MusicInfo serverInfo) {
     char* token1;
     char* token2;
     int match = 0;
-    memset(&tmpBuf1, 0, sizeof(tmpBuf1));
-    memset(&tmpBuf2, 0, sizeof(tmpBuf2));
-    memset(&tokBuf1, 0, sizeof(tokBuf1));
-    memset(&tokBuf2, 0, sizeof(tokBuf2));
+    memset ( &tmpBuf1, 0, sizeof ( tmpBuf1 ) );
+    memset ( &tmpBuf2, 0, sizeof ( tmpBuf2 ) );
+    memset ( &tokBuf1, 0, sizeof ( tokBuf1 ) );
+    memset ( &tokBuf2, 0, sizeof ( tokBuf2 ) );
 
-    strcpy(tmpBuf1, serverInfo.songNames);
-	    
+    strcpy ( tmpBuf1, serverInfo.songNames );
+
     //Iterate through client & server songs, checking for matches and placing differences in a delimited string
-    for(token1 = strtok_r((char *) tmpBuf1, DELIM_SONG, &tokBuf1); token1; token1 = strtok_r(NULL, DELIM_SONG, &tokBuf1)) {
-	memset(&tmpBuf2, 0, sizeof(tmpBuf2));
-	strcpy(tmpBuf2, clientInfo.songNames);
-	for(token2 = strtok_r((char *) tmpBuf2, DELIM_SONG, &tokBuf2); token2; token2 = strtok_r(NULL, DELIM_SONG, &tokBuf2)) {
-	    if(strcmp(token1, token2) == 0) {
-		match = 1;
-		break;
-	    }
-	}
-	if(match == 0) {
-	    strcat(bufPtr, token1);
-	    strcat(bufPtr, "|");
-	}
-	match = 0;
+    for ( token1 = strtok_r ( ( char * ) tmpBuf1, DELIM_SONG, &tokBuf1 ); token1; token1 = strtok_r ( NULL, DELIM_SONG, &tokBuf1 ) )
+    {
+        memset ( &tmpBuf2, 0, sizeof ( tmpBuf2 ) );
+        strcpy ( tmpBuf2, clientInfo.songNames );
+        for ( token2 = strtok_r ( ( char * ) tmpBuf2, DELIM_SONG, &tokBuf2 ); token2; token2 = strtok_r ( NULL, DELIM_SONG, &tokBuf2 ) )
+        {
+            if ( strcmp ( token1, token2 ) == 0 )
+            {
+                match = 1;
+                break;
+            }
+        }
+        if ( match == 0 )
+        {
+            strcat ( bufPtr, token1 );
+            strcat ( bufPtr, "|" );
+        }
+        match = 0;
     }
     return true;
 }
@@ -149,96 +157,105 @@ int main ( int argc, char *argv[] )
             size_t reqSize = Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
         }
 
-        /* Send command to server */
-        send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
-
-        /* Get server response */
-        recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
-        if ( Decode ( rcvBuf, RCVBUFSIZE, &rcvInfo ) )
-            printf ( "Response received for request: %s\n\n", rcvInfo.requestType );
-
-        /* Case list */
-        if ( strcmp ( rcvInfo.requestType, "list" ) == 0 )
+        if ( strcmp ( input, LIST ) != 0 && strcmp ( input, DIFF ) != 0 && strcmp ( input, PULL ) != 0   )
         {
-            printf ( "\nSongs in server library:\n" );
-            char tmpBuf[TMPBUFSIZE];
-            strcpy ( tmpBuf, rcvInfo.songNames );
-            char* token;
-            for ( token = strtok ( tmpBuf, "|" ); token; token = strtok ( NULL, "|" ) )
-                printf ( "%s\n", token );
-        }
-
-        /* Case diff */
-        else if ( strcmp ( rcvInfo.requestType, "diff" ) == 0 )
-        {
-            //Print out list of diffs
-	    memset(&diffBuf, 0, sizeof(diffBuf));
-	    if(getDiff(diffBuf, rcvInfo)) {
-		char tmpBuf[TMPBUFSIZE];
-		char* token;
-		//printf("diffBuf: %s\n", diffBuf);
-		memset (&tmpBuf, 0, sizeof(tmpBuf));
-		strcpy (tmpBuf, diffBuf);
-		printf ("\nOn server but not client:\n");
-		for ( token = strtok ( tmpBuf, "|" ); token; token = strtok ( NULL, "|" ) )
-		    printf ( "%s\n", token );
-	    }
-        }
-
-        /* Case PULL */
-        else if ( strcmp ( rcvInfo.requestType, "pull" ) == 0 )
-        {
-            char filepath[FILENAME_MAX];
-
-            while ( 1 )
-            {
-
-                memset ( filepath, 0, sizeof ( filepath ) );
-                strcpy ( filepath, UZIC_DIR );
-                strcat ( filepath, rcvInfo.songNames );
-
-                if ( fp == NULL )
-                    fp = fopen ( filepath, "wb" );
-
-                fwrite ( rcvInfo.fileData, 1, rcvInfo.dataLen, fp );
-
-                if ( rcvInfo.eof )
-                {
-                    fclose ( fp );
-                    fp = NULL;
-                }
-
-                if ( rcvInfo.terminate )
-                    break;
-                memset ( &sndBuf, 0, SNDBUFSIZE );
-                memset ( &rcvBuf, 0, RCVBUFSIZE );
-                memset ( &sndInfo, 0, sizeof ( sndInfo ) );
-                memset ( &rcvInfo, 0, sizeof ( rcvInfo ) );
-                memset ( rcvInfo.fileData, 0, 512 );
-
-                recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
-                Decode ( rcvBuf, RCVBUFSIZE, &rcvInfo );
-            }
-        }
-
-        else if ( strcmp ( rcvInfo.requestType, "leave" ) == 0 )
-        {
-	    printf("Closing connection with server\n");
-	    close(clientSock);
-	    break;
-	    //free(&sndInfo);
-	    //free(&rcvInfo);
+            printf ( "ERROR: Command not recognized.\n" );
         }
 
         else
         {
-            printf ( "Derp. Something screwed up. \n" );
-        }
+            /* Send command to server */
+            send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
 
-        memset ( &sndBuf, 0, SNDBUFSIZE );
-        memset ( &rcvBuf, 0, RCVBUFSIZE );
-        memset ( &sndInfo, 0, sizeof ( sndInfo ) );
-        memset ( &rcvInfo, 0, sizeof ( rcvInfo ) );
+            /* Get server response */
+            recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+            if ( Decode ( rcvBuf, RCVBUFSIZE, &rcvInfo ) )
+                printf ( "Response received for request: %s\n\n", rcvInfo.requestType );
+
+            /* Case list */
+            if ( strcmp ( rcvInfo.requestType, "list" ) == 0 )
+            {
+                printf ( "\nSongs in server library:\n" );
+                char tmpBuf[TMPBUFSIZE];
+                strcpy ( tmpBuf, rcvInfo.songNames );
+                char* token;
+                for ( token = strtok ( tmpBuf, "|" ); token; token = strtok ( NULL, "|" ) )
+                    printf ( "%s\n", token );
+            }
+
+            /* Case diff */
+            else if ( strcmp ( rcvInfo.requestType, "diff" ) == 0 )
+            {
+                //Print out list of diffs
+                memset ( &diffBuf, 0, sizeof ( diffBuf ) );
+                if ( getDiff ( diffBuf, rcvInfo ) )
+                {
+                    char tmpBuf[TMPBUFSIZE];
+                    char* token;
+                    //printf("diffBuf: %s\n", diffBuf);
+                    memset ( &tmpBuf, 0, sizeof ( tmpBuf ) );
+                    strcpy ( tmpBuf, diffBuf );
+                    printf ( "\nOn server but not client:\n" );
+                    for ( token = strtok ( tmpBuf, "|" ); token; token = strtok ( NULL, "|" ) )
+                        printf ( "%s\n", token );
+                }
+            }
+
+            /* Case PULL */
+            else if ( strcmp ( rcvInfo.requestType, "pull" ) == 0 )
+            {
+                char filepath[FILENAME_MAX];
+
+                while ( 1 )
+                {
+
+                    memset ( filepath, 0, sizeof ( filepath ) );
+                    strcpy ( filepath, UZIC_DIR );
+                    strcat ( filepath, rcvInfo.songNames );
+
+                    if ( fp == NULL )
+                        fp = fopen ( filepath, "wb" );
+
+                    fwrite ( rcvInfo.fileData, 1, rcvInfo.dataLen, fp );
+
+                    if ( rcvInfo.eof )
+                    {
+                        fclose ( fp );
+                        fp = NULL;
+                    }
+
+                    if ( rcvInfo.terminate )
+                        break;
+                    memset ( &sndBuf, 0, SNDBUFSIZE );
+                    memset ( &rcvBuf, 0, RCVBUFSIZE );
+                    memset ( &sndInfo, 0, sizeof ( sndInfo ) );
+                    memset ( &rcvInfo, 0, sizeof ( rcvInfo ) );
+                    memset ( rcvInfo.fileData, 0, 512 );
+
+                    recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+                    Decode ( rcvBuf, RCVBUFSIZE, &rcvInfo );
+                }
+            }
+
+            else if ( strcmp ( rcvInfo.requestType, "leave" ) == 0 )
+            {
+                printf ( "Closing connection with server\n" );
+                close ( clientSock );
+                break;
+                //free(&sndInfo);
+                //free(&rcvInfo);
+            }
+
+            else
+            {
+                printf ( "Derp. Something screwed up. \n" );
+            }
+
+            memset ( &sndBuf, 0, SNDBUFSIZE );
+            memset ( &rcvBuf, 0, RCVBUFSIZE );
+            memset ( &sndInfo, 0, sizeof ( sndInfo ) );
+            memset ( &rcvInfo, 0, sizeof ( rcvInfo ) );
+        }
     }
 
     close ( clientSock );
