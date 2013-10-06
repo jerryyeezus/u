@@ -147,12 +147,10 @@ int main ( int argc, char *argv[] )
             //Iterate through client & server songs, checking for matches and placing differences in a delimited string
             for ( token1 = strtok_r ( ( char * ) tmpBuf1, DELIM_SONG, &tokBuf1 ); token1; token1 = strtok_r ( NULL, DELIM_SONG, &tokBuf1 ) )
             {
-                //printf("Looping through 1, Token 1 = %s\n", token1);
                 memset ( &tmpBuf2, 0, sizeof ( tmpBuf2 ) );
                 strcpy ( tmpBuf2, clientInfo.songNames );
                 for ( token2 = strtok_r ( ( char * ) tmpBuf2, DELIM_SONG, &tokBuf2 ); token2; token2 = strtok_r ( NULL, DELIM_SONG, &tokBuf2 ) )
                 {
-                    //printf("Looping through 2, Token 2 = %s\n", token2);
                     if ( strcmp ( token1, token2 ) == 0 )
                     {
                         strcat ( matchBuf, token1 );
@@ -178,6 +176,7 @@ int main ( int argc, char *argv[] )
                 printf ( "%s\n", token2 );
         }
 
+        /* Case PULL */
         else if ( strcmp ( rcvInfo.requestType, "pull" ) == 0 )
         {
             char filepath[FILENAME_MAX];
@@ -190,10 +189,9 @@ int main ( int argc, char *argv[] )
                 strcat ( filepath, rcvInfo.songNames );
 
                 if ( fp == NULL )
-                    fp = fopen ( filepath, "w" );
+                    fp = fopen ( filepath, "wb" );
 
-                printf ( "rcvInfo.fileData = %s\n", rcvInfo.fileData );
-                fwrite ( rcvInfo.fileData, 1, strlen ( rcvInfo.fileData ), fp );
+                fwrite ( rcvInfo.fileData, 1, rcvInfo.dataLen, fp );
 
                 if ( rcvInfo.eof )
                 {

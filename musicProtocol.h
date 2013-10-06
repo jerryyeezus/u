@@ -17,9 +17,10 @@ struct MusicInfo
     char requestType[6];
     char songNames[512];
     char songIDs[512];
-    char fileData[512];
     char eof;	//End of file
     char terminate;	//End of command
+    int dataLen;
+    char fileData[512];
 };
 
 typedef struct MusicInfo MusicInfo;

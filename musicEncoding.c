@@ -6,7 +6,9 @@ size_t Encode ( const MusicInfo *music, uint8_t *outBuf, const size_t bufSize )
 {
     uint8_t *bufPtr = outBuf;
     long size = ( size_t ) bufSize;
-    int musicPrint = snprintf ( ( char * ) bufPtr, size, "%s\t%s\t%s\t%s\t%d\t%d\n", music->requestType, music->songNames, music->songIDs, music->fileData, music->eof, music->terminate );
+    int musicPrint = snprintf ( ( char * ) bufPtr, size, "%s\t%s\t%s\t%d\t%d\t%d\t", music->requestType, music->songNames, music->songIDs, music->eof, music->terminate, music->dataLen );
+    memcpy ( strlen ( bufPtr ) + bufPtr, music->fileData, music->dataLen );
+    strcat ( bufPtr, "\n" );
 
     bufPtr += musicPrint;
     size -= musicPrint;
@@ -22,42 +24,38 @@ bool Decode ( uint8_t *inBuf, const size_t mSize, MusicInfo *music )
         printf ( "ERROR: Command not recognized\n" );
         return false;
     }
-    //printf("Command accepted\n");
+
     strcpy ( music->requestType, token );
 
     token = strtok ( NULL, DELIM_INFO );
     if ( token == NULL )
         return false;
-
-    //printf("Reached songNames token\n");
     strcpy ( music->songNames, token );
 
     token = strtok ( NULL, DELIM_INFO );
     if ( token == NULL )
         return false;
-
-    //printf("Reached songIDs token\n");
     strcpy ( music->songIDs, token );
 
     token = strtok ( NULL, DELIM_INFO );
     if ( token == NULL )
         return false;
-
-    //printf("Reached fileData token\n");
-    strcpy ( music->fileData, token );
-
-    token = strtok ( NULL, DELIM_INFO );
-    if ( token == NULL )
-        return false;
-
     music->eof = token[0] == 49 ? 1 : 0;
 
     token = strtok ( NULL, DELIM_INFO );
     if ( token == NULL )
         return false;
-
     music->terminate = token[0] == 49? 1 : 0;
-    //printf("Terminate? %d\n", token[0]);
+
+    token = strtok ( NULL, DELIM_INFO );
+    if ( token == NULL )
+        return false;
+    music->dataLen = atoi ( token );
+
+    token = strtok ( NULL, DELIM_INFO );
+    if ( token == NULL )
+        return false;
+    memcpy ( music->fileData, token, music->dataLen );
 
     return true;
 }

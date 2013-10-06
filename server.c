@@ -190,11 +190,12 @@ int main ( int argc, char *argv[] )
                     sndInfo.eof = 0;
                     sndInfo.terminate = 0;
 
-                    FILE *fp = fopen ( curDir, "r" );
+                    FILE *fp = fopen ( curDir, "rb" );
                     size_t bytesRead = 0;
-                    while ( ( bytesRead = fread ( sndInfo.fileData, 1, 511, fp ) ) > 0 )
+                    while ( ( bytesRead = fread ( sndInfo.fileData, 1, 512, fp ) ) > 0 )
                     {
-                        if ( bytesRead < 511 )
+
+                        if ( bytesRead < 512 )
                         {
                             sndInfo.eof = 1;
                             curFile = strtok ( NULL, "|" );
@@ -202,8 +203,8 @@ int main ( int argc, char *argv[] )
                                 sndInfo.terminate = 1;
                         }
 
-                        /* null char appended for strlen */
-                        sndInfo.fileData[bytesRead + 1] = '\0';
+                        sndInfo.dataLen = bytesRead;
+
                         if ( curFile == NULL )
                             strcpy ( sndInfo.songNames, " " );
                         else
@@ -220,7 +221,7 @@ int main ( int argc, char *argv[] )
                 }
 
                 /* No more files at this point */
-                printf ( "All files done.\n" );
+                printf ( "All files done sending.\n" );
                 sndInfo.terminate = 1;
                 Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
                 send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
