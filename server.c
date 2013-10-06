@@ -197,20 +197,26 @@ int main ( int argc, char *argv[] )
                         if ( bytesRead < 511 )
                         {
                             sndInfo.eof = 1;
+                            curFile = strtok ( NULL, "|" );
+                            if ( curFile == NULL )
+                                sndInfo.terminate = 1;
                         }
 
                         /* null char appended for strlen */
                         sndInfo.fileData[bytesRead + 1] = '\0';
-                        strcpy ( sndInfo.songNames, curFile );
+                        if ( curFile == NULL )
+                            strcpy ( sndInfo.songNames, " " );
+                        else
+                            strcpy ( sndInfo.songNames, curFile );
 
                         /* Encode and send file chunk */
-                        Encode ( &sndInfo, sndBuf, SNDBUFSIZE ); // TODO eof NOT BEING ENCODED CORRECTLY
-
+                        Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
                         send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
+
+                        memset ( sndInfo.fileData, 0, 512 );
                     }	// end of current file
 
                     fclose ( fp );
-                    curFile = strtok ( NULL, "|" );
                 }
 
                 /* No more files at this point */

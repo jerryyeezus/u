@@ -181,13 +181,9 @@ int main ( int argc, char *argv[] )
         else if ( strcmp ( rcvInfo.requestType, "pull" ) == 0 )
         {
             char filepath[FILENAME_MAX];
-            printf ( "rcvBuf = %s\n", rcvBuf );
-            printf ( "rcvInfo.terminate = %d\n", rcvInfo.eof );
 
             while ( 1 )
             {
-                if ( rcvInfo.terminate ) // TODO WHY IS THIS 1 NOW WTF!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                    break;
 
                 memset ( filepath, 0, sizeof ( filepath ) );
                 strcpy ( filepath, UZIC_DIR );
@@ -196,16 +192,17 @@ int main ( int argc, char *argv[] )
                 if ( fp == NULL )
                     fp = fopen ( filepath, "w" );
 
-                printf ( "Writing\n" );
                 printf ( "rcvInfo.fileData = %s\n", rcvInfo.fileData );
                 fwrite ( rcvInfo.fileData, 1, strlen ( rcvInfo.fileData ), fp );
 
                 if ( rcvInfo.eof )
                 {
-                    printf ( "eof detected\n" );
                     fclose ( fp );
                     fp = NULL;
                 }
+
+                if ( rcvInfo.terminate )
+                    break;
 
                 recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
                 Decode ( rcvBuf, RCVBUFSIZE, &rcvInfo );
