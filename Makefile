@@ -18,10 +18,10 @@ endif
 all: client server 
 
 client: client.c
-	$(CC) musicEncoding.c client.c -o uZic -g
+	$(CC) musicEncoding.c client.c -o uZic -g -lpthread
 
 server: server.c
-	$(CC) musicEncoding.c server.c -o uZicServer -g
+	$(CC) musicEncoding.c server.c -o uZicServer -g -lpthread
 
 clean:
 	rm -f client server *.o

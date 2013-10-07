@@ -143,13 +143,13 @@ int main ( int argc, char *argv[] )
         memset ( &sndInfo, 0, sizeof ( sndInfo ) );
         memset ( &rcvInfo, 0, sizeof ( rcvInfo ) );
         memset ( sndInfo.fileData, 0, 512 );
-        printf ( ">> " );
+        printf ( "\n>> " );
         gets ( input );
         if ( input )
         {
             strcpy ( sndInfo.requestType, input );
             strcpy ( sndInfo.songNames, " " );
-            //strcpy ( sndInfo.songIDs, " " );
+            strcpy ( sndInfo.songIDs, " " );
             strcpy ( sndInfo.songIDs, diffBuf );
             sndInfo.eof = 1;
             sndInfo.terminate = 1;
@@ -157,7 +157,7 @@ int main ( int argc, char *argv[] )
             size_t reqSize = Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
         }
 
-        if ( strcmp ( input, LIST ) != 0 && strcmp ( input, DIFF ) != 0 && strcmp ( input, PULL ) != 0   )
+        if ( strcmp ( input, LIST ) != 0 && strcmp ( input, DIFF ) != 0 && strcmp ( input, PULL ) != 0  && strcmp (input, LEAVE ) != 0 )
         {
             printf ( "ERROR: Command not recognized.\n" );
         }
@@ -169,8 +169,8 @@ int main ( int argc, char *argv[] )
 
             /* Get server response */
             recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
-            if ( Decode ( rcvBuf, RCVBUFSIZE, &rcvInfo ) )
-                printf ( "Response received for request: %s\n\n", rcvInfo.requestType );
+            Decode ( rcvBuf, RCVBUFSIZE, &rcvInfo );
+                //printf ( "Response received for request: %s\n\n", rcvInfo.requestType );
 
             /* Case list */
             if ( strcmp ( rcvInfo.requestType, "list" ) == 0 )
@@ -192,12 +192,15 @@ int main ( int argc, char *argv[] )
                 {
                     char tmpBuf[TMPBUFSIZE];
                     char* token;
-                    //printf("diffBuf: %s\n", diffBuf);
                     memset ( &tmpBuf, 0, sizeof ( tmpBuf ) );
                     strcpy ( tmpBuf, diffBuf );
-                    printf ( "\nOn server but not client:\n" );
-                    for ( token = strtok ( tmpBuf, "|" ); token; token = strtok ( NULL, "|" ) )
-                        printf ( "%s\n", token );
+		    if(strlen(tmpBuf)) {	//Check to make sure that there are some differences
+                    	printf ( "\nOn server but not client:\n" );
+                    	for ( token = strtok ( tmpBuf, "|" ); token; token = strtok ( NULL, "|" ) )
+                            printf ( "%s\n", token );
+		    }
+		    else
+			printf("\nAll server files have a local match.\n");
                 }
             }
 
@@ -205,7 +208,7 @@ int main ( int argc, char *argv[] )
             else if ( strcmp ( rcvInfo.requestType, "pull" ) == 0 )
             {
                 char filepath[FILENAME_MAX];
-
+		printf("\nPulling files from server...\n");
                 while ( 1 )
                 {
 
@@ -224,8 +227,11 @@ int main ( int argc, char *argv[] )
                         fp = NULL;
                     }
 
-                    if ( rcvInfo.terminate )
+                    if ( rcvInfo.terminate ) {
+			printf("Done.\n");
+			fflush(stdout);
                         break;
+		    }
                     memset ( &sndBuf, 0, SNDBUFSIZE );
                     memset ( &rcvBuf, 0, RCVBUFSIZE );
                     memset ( &sndInfo, 0, sizeof ( sndInfo ) );

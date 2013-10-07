@@ -28,36 +28,43 @@ bool Decode ( uint8_t *inBuf, const size_t mSize, MusicInfo *music )
     }
 
     strcpy ( music->requestType, token );
+    //printf("In decode, requestType: %s\n", music->requestType);
 
     token = strtok ( NULL, DELIM_INFO );
     if ( token == NULL )
         return false;
     strcpy ( music->songNames, token );
+    //printf("In decode, songNames: %s\n", music->songNames);
 
     token = strtok ( NULL, DELIM_INFO );
     if ( token == NULL )
         return false;
     strcpy ( music->songIDs, token );
+    //printf("In decode, songIDs: %s\n", music->songIDs);
 
     token = strtok ( NULL, DELIM_INFO );
     if ( token == NULL )
         return false;
     music->eof = token[0] == 49 ? 1 : 0;
+    //printf("In decode, EOF: %i\n", music->eof);
 
     token = strtok ( NULL, DELIM_INFO );
     if ( token == NULL )
         return false;
     music->terminate = token[0] == 49? 1 : 0;
+    //printf("In decode, terminate: %i\n", music->terminate);
 
     token = strtok ( NULL, DELIM_INFO );
     if ( token == NULL )
         return false;
     music->dataLen = atoi ( token );
+    //printf("In decode, dataLen: %i\n", music->dataLen);
 
     token = strtok ( NULL, DELIM_INFO );
     if ( token == NULL )
         return false;
     memcpy ( music->fileData, token, music->dataLen );
+    //printf("In decode, fileData: %s\n", music->fileData);
 
     return true;
 }

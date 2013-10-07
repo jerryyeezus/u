@@ -12,6 +12,7 @@ static const char *REQUESTSTR = "Y";
 static const char *DELIM_INFO = "\t";
 static const char *DELIM_SONG = "|";
 
+/* Structure for sending and handling music files */
 struct MusicInfo
 {
     char requestType[6];
@@ -32,5 +33,7 @@ enum
 };
 
 int GetNextMsg ( FILE *in, uint8_t *buf, size_t bufSize );
-size_t Encode ( const MusicInfo *music, uint8_t *outBuf, const size_t bufSize );
-bool Decode ( uint8_t *inBuf, const size_t mSize, MusicInfo *music );
+size_t Encode ( const MusicInfo *music, uint8_t *outBuf, const size_t bufSize );	/* Encode messages for sending */
+bool Decode ( uint8_t *inBuf, const size_t mSize, MusicInfo *music );	/* Decode sent messages */
+void HandleClientRequest(int clientSock);	/* All server-side work for handling requests from a client */
+void *ThreadMain(void *arg);	/* Main program for a thread */
