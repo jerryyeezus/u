@@ -1,0 +1,9 @@
+repo/
+my_uZic/
+*.swp
+serverLog.txt
+uZic
+uZicServer
+
+*~*
+~.orig
