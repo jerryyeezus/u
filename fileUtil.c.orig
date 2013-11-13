@@ -7,9 +7,10 @@ int doDiffServer ( msg_t *rcvInfo, msg_t *sndInfo )
     int i = 0;
     DIR *dir;
     struct dirent *ent;
-    char tmpStr[128];
+    struct stat s;
+	char tmpStr[128];
     char filepath[FILENAME_MAX ];
-    unsigned checksum;
+	unsigned checksum;
 
     strcpy ( sndInfo->request, rcvInfo->request );
     if ( ( ( dir = opendir ( "./repo" ) ) != NULL ) )
@@ -21,20 +22,20 @@ int doDiffServer ( msg_t *rcvInfo, msg_t *sndInfo )
             memset ( filepath, 0, FILENAME_MAX );
             strcat ( filepath, SERVER_DIR );
             strcat ( filepath, d_name );
-            checksum = 0;
+			checksum = 0;
 
             if ( *d_name != '.' )
             {
                 strcpy ( sndInfo->filenames[i], d_name );
 
-                FILE *fp = fopen ( filepath, "rb" );
-                while ( !feof ( fp ) && !ferror ( fp ) )
-                {
-                    memset ( &tmpStr, 0, sizeof ( tmpStr ) );
-                    fgets ( tmpStr, 128, fp );
-                    checksum += atoi ( tmpStr );
-                }
-                fclose ( fp );
+				FILE *fp = fopen(filepath, "rb");
+				while ( !feof( fp ) && !ferror( fp ) ) {
+					memset( &tmpStr, 0, sizeof( tmpStr ));
+					fgets( tmpStr, 128, fp );
+					checksum += atoi( tmpStr );
+				}
+				fclose(fp);
+                //stat ( filepath, &s );
                 sndInfo->cksums[i++] = checksum;
             }
         }
@@ -83,6 +84,7 @@ int doDiffClient ( msg_t *rcvInfo, msg_t *sndInfo )
         for ( j = 0; j < numClientFiles; j++ )
         {
             /* Client filename match found */
+            //if ( strcmp ( rcvInfo->filenames[i], fnBuf[j] ) == 0 )
             if ( rcvInfo->cksums[i] == cksumBuf[j] )
             {
                 isFound = 1;

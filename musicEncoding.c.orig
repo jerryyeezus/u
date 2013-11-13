@@ -22,7 +22,7 @@ size_t Encode ( const msg_t *msg, uint8_t *outBuf, const size_t bufSize )
     }
 
     sprintf ( outBuf + count, "\t" );
-    count++;
+	count++;
 
     for ( i = 0; i < msg->len; i++ )
     {

@@ -22,7 +22,7 @@ typedef struct msg_t
 {
     char request[12];
     char filenames[32][32];
-    int cksums[32];
+	char cksums[32];
     int len;
 } msg_t;
 
