@@ -35,8 +35,8 @@ size_t Encode ( const msg_t *msg, uint8_t *outBuf, const size_t bufSize )
 
 bool Decode ( uint8_t *inBuf, const size_t mSize, msg_t *msg )
 {
-    char tmp[256];
-    char tmp2[256];
+    char tmp[512];
+    char tmp2[128];
     int i;
     memset ( tmp, 0, sizeof ( tmp ) );
 
@@ -53,6 +53,7 @@ bool Decode ( uint8_t *inBuf, const size_t mSize, msg_t *msg )
     token = strtok ( NULL, DELIM_INFO );
     strcpy ( tmp, token );
     token = strtok ( NULL, DELIM_INFO );
+    memset ( tmp2, 0, sizeof ( tmp2 ) );
     strcpy ( tmp2, token );
 
     /* Parse len */

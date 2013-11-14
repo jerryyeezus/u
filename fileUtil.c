@@ -1,6 +1,7 @@
 #include <sys/stat.h>
 #include "musicProtocol.h"
 #include "fileUtil.h"
+#include <string.h>
 
 int doDiffServer ( msg_t *rcvInfo, msg_t *sndInfo )
 {
@@ -54,8 +55,10 @@ int doDiffClient ( msg_t *rcvInfo, msg_t *sndInfo )
     char isFound;
     char fnBuf[128][FILENAME_MAX];
     int cksumBuf[32];
+    char tmpStr[128];
     char filepath[FILENAME_MAX];
     struct stat s;
+    unsigned checksum = 0;
 
     /* Get files on client first */
     if ( ( dir = opendir ( UZIC_DIR ) ) != NULL )
@@ -67,11 +70,20 @@ int doDiffClient ( msg_t *rcvInfo, msg_t *sndInfo )
             strcat ( filepath, UZIC_DIR );
             strcat ( filepath, d_name );
             stat ( filepath, &s );
+            checksum = 0;
 
             if ( *d_name != '.' )
             {
                 strcpy ( fnBuf[numClientFiles], d_name );
-                cksumBuf[numClientFiles++] = s.st_size;
+                FILE *fp = fopen ( filepath, "rb" );
+                while ( !feof ( fp ) && !ferror ( fp ) )
+                {
+                    memset ( &tmpStr, 0, sizeof ( tmpStr ) );
+                    fgets ( tmpStr, 128, fp );
+                    checksum += atoi ( tmpStr );
+                }
+                fclose ( fp );
+                cksumBuf[numClientFiles++] = checksum;
             }
         }
     }
