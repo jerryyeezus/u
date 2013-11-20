@@ -21,8 +21,8 @@ static const char *DELIM_SONG = "|";
 typedef struct msg_t
 {
     char request[12];
-    char filenames[32][32];
-	char cksums[32];
+    char filenames[32][128];
+    int cksums[32];
     int len;
 } msg_t;
 
