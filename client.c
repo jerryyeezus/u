@@ -10,8 +10,8 @@
 #define TMPBUFSIZE 512		    /* Size for temporary buffers */
 #define INPUTSIZE 12
 
-//char *servIP = "130.207.114.21";
-char *servIP = "localhost";
+char *servIP = "130.207.114.21";
+//char *servIP = "localhost";
 
 
 /* The main function */
