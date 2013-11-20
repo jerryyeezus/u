@@ -77,6 +77,14 @@ public class Message {
 	return ret;
     }
     
+    public String getFileNames() {
+    	String ret = "[FILENAMES]: ";
+    	for (int i = 0; i < this.len; i++) {
+    	    ret += filenames[i] + ", ";
+    	}
+    	return ret;
+    }
+    
     public static String encodeMessage(Message msg) {
 	StringBuilder ret = new StringBuilder();
 	ret.append(msg.request);
