@@ -2,6 +2,7 @@ package com.example.myfirstapp;
 
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -13,6 +14,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.EditText;
@@ -69,25 +72,41 @@ public class MainActivity extends Activity {
     			
     			//Write the message as an output stream
     			PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(clientSock.getOutputStream())), true);
-        		out.println(arg0[0]);
+    			Message commandMessage = new Message(arg0[0]);
+        		String encodedMessage = new String();
+        		encodedMessage = Message.encodeMessage(commandMessage);
+        		//Log.d("encoding", encodedMessage);
+    			out.println(encodedMessage);
         		
         		//Receive the message from the server in unsigned bytes
 				DataInputStream input = new DataInputStream(clientSock.getInputStream());
         		String str = new String();
-        		for(int i = 0; i < 32; i++) {		
-        			str += String.format("%02x", input.readUnsignedByte());
+        		for(int i = 0; i < 2048; i++) {
+        			str += Character.toString((char)input.readUnsignedByte());
         		}
+        		Message rcvMessage = Message.decodeMessage(str);
+        		Log.d("debugging", rcvMessage.toString());
         		
+          		String musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).toString();
+        		Log.d("debugging", musicDir);
+        		
+        		File clientFiles = new File(musicDir);
+        	    String clientFileStr = listFilesForFolder(clientFiles);
+        		
+        	    Log.d("debugging", clientFileStr);
+        	    
         		//Close the socket
         		clientSock.close();
         		
-        		return str;
+        		return "Server Files: \n" + rcvMessage.getFileNames() + "Client Files: \n" + diffFiles;
     		}
     		catch(UnknownHostException e) {
         		e.printStackTrace();
+        		Log.d("debugging", "Unknown Host Exception");
         	}
         	catch(IOException e) {
         		e.printStackTrace();
+        		Log.d("debugging", "IO Exception");
         	}
 			return null;
     	}
@@ -96,6 +115,18 @@ public class MainActivity extends Activity {
     	protected void onPostExecute(String strOut) {}
     	protected void onProgressUpdate(Void... values) {}
     	
+    }
+    
+    public String listFilesForFolder(final File folder) {
+		String fileStr = new String();
+        for (final File fileEntry : folder.listFiles()) {
+            if (fileEntry.isDirectory()) {
+                listFilesForFolder(fileEntry);
+            } else {
+                fileStr += fileEntry.getName() + "\n";
+            }
+        }
+        return fileStr;
     }
     
 }

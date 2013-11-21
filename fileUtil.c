@@ -2,6 +2,7 @@
 #include "musicProtocol.h"
 #include "fileUtil.h"
 #include <string.h>
+#include <openssl/md5.h>
 
 int doDiffServer ( msg_t *rcvInfo, msg_t *sndInfo )
 {
@@ -26,6 +27,30 @@ int doDiffServer ( msg_t *rcvInfo, msg_t *sndInfo )
 
             if ( *d_name != '.' )
             {
+                /*unsigned char c[MD5_DIGEST_LENGTH];
+                int j;
+
+                FILE *fp = fopen ( filepath, "rb" );
+                MD5_CTX mdContext;
+                int bytes;
+                unsigned char data[1024];
+                
+                if(fp == NULL){
+                    printf("%s can't be opened.\n", filepath);
+                    exit(1);
+                }
+
+                MD5_Init(&mdContext);
+                while((bytes = fread(data, 1, 1024, fp)) != 0){
+                    MD5_Update(&mdContext, data, bytes);
+                }
+                MD5_Final(c, &mdContext);
+                for(j = 0; j < MD5_DIGEST_LENGTH; j++)
+                    printf("%02x", c[j]);
+                printf(" %s\n", filepath);
+                fclose(fp);
+                sndInfo->cksums[i++] = c;*/
+
                 strcpy ( sndInfo->filenames[i], d_name );
 
                 FILE *fp = fopen ( filepath, "rb" );
