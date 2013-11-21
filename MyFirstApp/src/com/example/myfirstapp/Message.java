@@ -78,9 +78,15 @@ public class Message {
     }
     
     public String getFileNames() {
+<<<<<<< HEAD
     	String ret = new String();
     	for (int i = 0; i < this.len; i++) {
     	    ret += filenames[i] + "\n";
+=======
+    	String ret = "[FILENAMES]: ";
+    	for (int i = 0; i < this.len; i++) {
+    	    ret += filenames[i] + ", ";
+>>>>>>> d90bcd1515b010144950eb4f8881a74dc710f647
     	}
     	return ret;
     }

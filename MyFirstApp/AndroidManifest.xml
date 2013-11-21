@@ -6,8 +6,12 @@
     
     <uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+<<<<<<< HEAD
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 	
+=======
+    
+>>>>>>> d90bcd1515b010144950eb4f8881a74dc710f647
     <uses-sdk
         android:minSdkVersion="8"
         android:targetSdkVersion="18" />
