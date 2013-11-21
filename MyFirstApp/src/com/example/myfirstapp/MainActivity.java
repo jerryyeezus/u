@@ -11,7 +11,6 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ExecutionException;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -87,15 +86,6 @@ public class MainActivity extends Activity {
         		}
         		Message rcvMessage = Message.decodeMessage(str);
         		Log.d("debugging", rcvMessage.toString());
-<<<<<<< HEAD
-=======
-        		
-        		//File currentDir = Context.getFilesDir();
-        		//Log.d("debugging", currentDir);
-        		
-        		File clientFiles = new File(Environment.getExternalStorageDirectory(), "Music");
-        	    listFilesForFolder(clientFiles);
->>>>>>> d90bcd1515b010144950eb4f8881a74dc710f647
         		
           		String musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).toString();
         		Log.d("debugging", musicDir);
@@ -108,11 +98,7 @@ public class MainActivity extends Activity {
         		//Close the socket
         		clientSock.close();
         		
-<<<<<<< HEAD
         		return "Server Files: \n" + rcvMessage.getFileNames() + "Client Files: \n" + diffFiles;
-=======
-        		return rcvMessage.getFileNames();
->>>>>>> d90bcd1515b010144950eb4f8881a74dc710f647
     		}
     		catch(UnknownHostException e) {
         		e.printStackTrace();
@@ -131,27 +117,16 @@ public class MainActivity extends Activity {
     	
     }
     
-<<<<<<< HEAD
     public String listFilesForFolder(final File folder) {
 		String fileStr = new String();
-=======
-    public void listFilesForFolder(final File folder) {
-		File file[] = folder.listFiles();
->>>>>>> d90bcd1515b010144950eb4f8881a74dc710f647
         for (final File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
                 listFilesForFolder(fileEntry);
             } else {
-<<<<<<< HEAD
                 fileStr += fileEntry.getName() + "\n";
             }
         }
         return fileStr;
-=======
-                Log.d("debugging", fileEntry.getName());
-            }
-        }
->>>>>>> d90bcd1515b010144950eb4f8881a74dc710f647
     }
     
 }
