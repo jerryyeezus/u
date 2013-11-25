@@ -2,7 +2,6 @@ package com.example.myfirstapp;
 
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -14,7 +13,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -77,6 +75,7 @@ public class MainActivity extends Activity {
         		encodedMessage = Message.encodeMessage(commandMessage);
         		//Log.d("encoding", encodedMessage);
     			out.println(encodedMessage);
+    			Log.d("debugging", "Message sent");
         		
         		//Receive the message from the server in unsigned bytes
 				DataInputStream input = new DataInputStream(clientSock.getInputStream());
@@ -87,18 +86,17 @@ public class MainActivity extends Activity {
         		Message rcvMessage = Message.decodeMessage(str);
         		Log.d("debugging", rcvMessage.toString());
         		
-          		String musicDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).toString();
-        		Log.d("debugging", musicDir);
+        		String[] diffNames =	 DiffClient.fileCompare(rcvMessage);
+        	    //Log.d("debugging", diffNames);
         		
-        		File clientFiles = new File(musicDir);
-        	    String clientFileStr = listFilesForFolder(clientFiles);
+        		String diffStr = new String();
+        		for(int i = 0; i < diffNames.length; i++) {
+        			Log.d("debugging", diffNames[i]);
+        			diffStr += diffNames[i] + "\n";
+        		}
         		
-        	    Log.d("debugging", clientFileStr);
-        	    
-        		//Close the socket
-        		clientSock.close();
-        		
-        		return "Server Files: \n" + rcvMessage.getFileNames() + "Client Files: \n" + diffFiles;
+        		return "Differing Files: \n" + diffStr;
+        		//return "Server Files: \n" + rcvMessage.getFileNames() + "Client Files: \n" + diffNames;
     		}
     		catch(UnknownHostException e) {
         		e.printStackTrace();
@@ -115,18 +113,6 @@ public class MainActivity extends Activity {
     	protected void onPostExecute(String strOut) {}
     	protected void onProgressUpdate(Void... values) {}
     	
-    }
-    
-    public String listFilesForFolder(final File folder) {
-		String fileStr = new String();
-        for (final File fileEntry : folder.listFiles()) {
-            if (fileEntry.isDirectory()) {
-                listFilesForFolder(fileEntry);
-            } else {
-                fileStr += fileEntry.getName() + "\n";
-            }
-        }
-        return fileStr;
     }
     
 }

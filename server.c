@@ -197,6 +197,7 @@ void HandleClientRequest ( int clientSock )
 
             /* Send server file lengths to client */
             Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
+            printf("Diff message to client: %s\n", sndBuf);
             send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
         }	// end of DIFF
 

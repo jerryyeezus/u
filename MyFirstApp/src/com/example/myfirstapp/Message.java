@@ -43,7 +43,7 @@ public class Message {
 	String request = st.nextToken();
 	String filenames = st.nextToken();
 	String cksums = st.nextToken();
-	int len = Integer.valueOf(st.nextToken());
+	int len = Integer.valueOf(st.nextToken().substring(0,1));
 	
 	// Populate filenames
 	st = new StringTokenizer(filenames, "|");
@@ -75,6 +75,10 @@ public class Message {
 	ret += "[LEN]: " + this.len;
 
 	return ret;
+    }
+    
+    public String[] getFileNameArray() {
+    	return filenames;
     }
     
     public String getFileNames() {
