@@ -34,10 +34,8 @@ public class DiffClient {
 
 	for (int i = 0; i < serverNames.length; i++) {
 	    isFound = false;
-	    //Log.d("debugging", "SL: " + (serverNames.length - 1));
 	    for (int j = 0; j < clientNames.length; j++) {
-		Log.d("debugging", "Server: " + serverNames[j]);
-		if (clientNames[i].equals(serverNames[j])) {
+		if (clientNames[j].equals(serverNames[i])) {
 		    isFound = true;
 		    break;
 		}

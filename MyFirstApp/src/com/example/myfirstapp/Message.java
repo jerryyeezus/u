@@ -81,6 +81,10 @@ public class Message {
     	return filenames;
     }
     
+    public String[] getFileNamesArray() {
+	return this.filenames;
+    }
+    
     public String getFileNames() {
     	String ret = new String();
     	for (int i = 0; i < this.len; i++) {
