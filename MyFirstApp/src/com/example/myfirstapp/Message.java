@@ -96,6 +96,10 @@ public class Message {
 	return this.filenames;
     }
     
+    public String[] getFileNamesArray() {
+	return this.filenames;
+    }
+    
     public String getFileNames() {
 >>>>>>> dbe859d33d4c319bfadf3e154fd7516fda24848d
     	String ret = new String();
