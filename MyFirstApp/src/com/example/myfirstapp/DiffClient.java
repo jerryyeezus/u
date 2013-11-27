@@ -27,6 +27,7 @@ public class DiffClient {
      */
     public static String[] fileCompare(Message rcvMessage) {
 
+<<<<<<< HEAD
 		ArrayList<String> diffList = new ArrayList<String>();
 		boolean isFound;
 	
@@ -43,6 +44,26 @@ public class DiffClient {
 		int[] clientSums = new int[clientNames.length];
 		for(int i = 0; i < clientNames.length; i++) {
 			clientSums[i] = getChecksum(musicDir + "/" + clientNames[i]);
+=======
+	ArrayList<String> diffList = new ArrayList<String>();
+	boolean isFound;
+
+	/* Get server file names from received message */
+	String[] serverNames = rcvMessage.getFileNameArray();
+
+	/* Get client file names from local directory */
+	String musicDir = Environment.getExternalStoragePublicDirectory(
+		Environment.DIRECTORY_MUSIC).toString();
+	File clientFiles = new File(musicDir);
+	String[] clientNames = getLocalFiles(clientFiles);
+
+	for (int i = 0; i < serverNames.length; i++) {
+	    isFound = false;
+	    for (int j = 0; j < clientNames.length; j++) {
+		if (clientNames[j].equals(serverNames[i])) {
+		    isFound = true;
+		    break;
+>>>>>>> dbe859d33d4c319bfadf3e154fd7516fda24848d
 		}
 		
 		//Get server file checksums

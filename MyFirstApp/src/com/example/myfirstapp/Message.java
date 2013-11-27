@@ -89,7 +89,15 @@ public class Message {
 		return ret;
     }
     
+<<<<<<< HEAD
     public String getFileNameString() {
+=======
+    public String[] getFileNamesArray() {
+	return this.filenames;
+    }
+    
+    public String getFileNames() {
+>>>>>>> dbe859d33d4c319bfadf3e154fd7516fda24848d
     	String ret = new String();
     	for (int i = 0; i < this.len; i++) {
     	    ret += filenames[i] + "\n";
