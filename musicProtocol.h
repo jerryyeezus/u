@@ -14,6 +14,7 @@ static const char *LIST = "list";
 static const char *DIFF = "diff";
 static const char *PULL = "pull";
 static const char *LEAVE = "leave";
+static const char *CAP = "cap";
 static const char *DELIM_INFO = "\t";
 static const char *DELIM_SONG = "|";
 

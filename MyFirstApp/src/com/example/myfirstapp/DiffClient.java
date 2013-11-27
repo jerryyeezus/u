@@ -1,6 +1,11 @@
 package com.example.myfirstapp;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import android.os.Environment;
@@ -14,64 +19,130 @@ public class DiffClient {
 	rcvMessage = this.rcvMessage;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) {}
 
-    }
-
+    /* Compares server and client files to find differences
+     * @param rcvMessage The message containing server file info
+     * @return A string array containing file names for differences
+     */
     public static String[] fileCompare(Message rcvMessage) {
 
-	ArrayList<String> diffList = new ArrayList<String>();
-	boolean isFound;
-
-	/* Get server file names from received message */
-	String[] serverNames = rcvMessage.getFileNameArray();
-
-	/* Get client file names from local directory */
-	String musicDir = Environment.getExternalStoragePublicDirectory(
-		Environment.DIRECTORY_MUSIC).toString();
-	File clientFiles = new File(musicDir);
-	String[] clientNames = getLocalFiles(clientFiles);
-
-	for (int i = 0; i < serverNames.length; i++) {
-	    isFound = false;
-	    //Log.d("debugging", "SL: " + (serverNames.length - 1));
-	    for (int j = 0; j < clientNames.length; j++) {
-		Log.d("debugging", "Server: " + serverNames[j]);
-		if (clientNames[i].equals(serverNames[j])) {
-		    isFound = true;
-		    break;
+		ArrayList<String> diffList = new ArrayList<String>();
+		boolean isFound;
+	
+		//Get server file names from received message
+		String[] serverNames = rcvMessage.getFilenames();
+	
+		//Get client file names from local directory
+		String musicDir = Environment.getExternalStoragePublicDirectory(
+			Environment.DIRECTORY_MUSIC).toString();
+		File clientFiles = new File(musicDir);
+		String[] clientNames = getFiles(clientFiles);
+		
+		//Get checksums for all client files
+		int[] clientSums = new int[clientNames.length];
+		for(int i = 0; i < clientNames.length; i++) {
+			clientSums[i] = getChecksum(musicDir + "/" + clientNames[i]);
 		}
-	    }
-	    if (!isFound) {
-		diffList.add(serverNames[i]);
-	    }
-	}
-
-	String[] diffNames = new String[diffList.size()];
-	for (int i = 0; i < diffNames.length; i++) {
-	    diffNames[i] = diffList.get(i).toString();
-	}
-
-	return diffNames;
+		
+		//Get server file checksums
+		int[] serverSums = rcvMessage.getCksums();
+	
+		//Iterate through arrays, comparing server and client checksums
+		//and placing server files with no match in diffList array
+		for (int i = 0; i < serverSums.length; i++) {
+		    isFound = false;
+		    Log.d("debugging", "Server: " + serverNames[i]);
+		    for (int j = 0; j < clientSums.length; j++) {
+				Log.d("debugging", "Client: " + clientNames[j]);
+				if (serverSums[i] == clientSums[j]) {
+				    isFound = true;
+				    break;
+				}
+		    }
+		    if (!isFound) {
+		    	diffList.add(serverNames[i]);
+		    }
+		}
+	
+		//Transfer song names from array list to string array
+		String[] diffNames = new String[diffList.size()];
+		for (int i = 0; i < diffNames.length; i++) {
+		    diffNames[i] = diffList.get(i).toString();
+		}
+	
+		return diffNames;
     }
 
-    public static String[] getLocalFiles(final File folder) {
-	ArrayList<String> fileList = new ArrayList<String>();
-	if (folder.listFiles() == null)
-	    return new String[0];
-	
-	for (final File fileEntry : folder.listFiles()) {
-	    if (fileEntry.isDirectory()) {
-		getLocalFiles(fileEntry);
-	    } else {
-		fileList.add(fileEntry.getName());
-	    }
-	}
-	String[] fileNames = new String[fileList.size()];
-	for (int i = 0; i < fileNames.length; i++) {
-	    fileNames[i] = fileList.get(i).toString();
-	}
-	return fileNames;
+    /* Gets file names from a given directory
+     * @param folder The directory containing files
+     * @return A string array containing all file names in the folder
+     */
+    public static String[] getFiles(final File folder) {
+    	
+    	//Initialize an array list for containing the file names
+    	ArrayList<String> fileList = new ArrayList<String>();
+    	
+    	//Iterate through folder to get all file names
+        for (final File fileEntry : folder.listFiles()) {
+            if (fileEntry.isDirectory()) {
+                getFiles(fileEntry);
+            } else {
+            	fileList.add(fileEntry.getName());	
+            }
+        }
+        
+        //Transfer file names from the array list to a string array
+        String[] fileNames = new String[fileList.size()];
+        for(int i = 0; i < fileNames.length; i++) {
+        	fileNames[i] = fileList.get(i).toString();
+        }
+        return fileNames;
+    }
+    
+    /* Gets a checksum value using MD5 for the given file
+     * @param filepath A string containing the path for a file
+     * @return The integer checksum of the file's data
+     */
+    public static int getChecksum(String filepath) {
+    	int checksum = 0;
+    	try {
+    		//Open file input stream for given music file
+    		FileInputStream inputStream = new FileInputStream(filepath);
+    		Log.d("debugging", "Filepath: " + filepath);
+    		
+    		//Initialize MD5 digest and byte array for reading data
+    		MessageDigest md = MessageDigest.getInstance("MD5");
+    		byte[] data = new byte[1024];
+    		
+    		//Read chunks of bytes into message digest
+    		int numRead = 0;
+    		while((numRead = inputStream.read(data)) != -1) {
+    			md.update(data, 0, numRead);
+    		}
+    		//Put hashed bytes into a byte array
+    		byte[] fileBytes = md.digest();
+    		
+    		//Add the hashed values, byte by byte to get a checksum
+    		for(int i = 0; i < fileBytes.length; i++) {
+    			checksum += (fileBytes[i] & 0xFF);
+    			Log.d("debugging", "Unsigned Byte value at i: " + (fileBytes[i] & 0xFF));
+    		}
+    		
+    		//Close input stream and return calculated checksum
+        	inputStream.close();
+    		return checksum;
+    	}
+    	catch(FileNotFoundException fnfe) {
+    		Log.d("debugging", "FNF Exception");
+    	}
+    	catch(IOException ioe) {
+    		Log.d("debugging", "IO Exception");
+    	}
+    	catch(NoSuchAlgorithmException nsae) {
+    		Log.d("debugging", "No such algorithm exception on digest");
+    	}
+    	return checksum;
     }
 
 }

@@ -34,10 +34,9 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.myfirstapp.MainActivity" />
         </activity>
-        <activity
-            android:name="com.example.myfirstapp.TCPConnect"
-            android:label="@string/title_activity_tcpconnect" >
-        </activity>
+        <service 
+            android:enabled="true"
+            android:name="com.example.myfirstapp.SocketService" />
     </application>
 
 </manifest>

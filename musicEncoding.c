@@ -42,40 +42,48 @@ bool Decode ( uint8_t *inBuf, const size_t mSize, msg_t *msg )
 
     /* Parse request */
     char *token = strtok (  inBuf, DELIM_INFO );
-    if ( token == NULL || ( strcmp ( token, LIST ) != 0 && strcmp ( token, DIFF ) != 0 && strcmp ( token, PULL ) != 0 && strcmp ( token, LEAVE ) != 0 ) )
+    if ( token == NULL || ( strcmp ( token, LIST ) != 0 && strcmp ( token, DIFF ) != 0 && strcmp ( token, PULL ) != 0 && strcmp ( token, LEAVE ) != 0 && strcmp ( token, CAP ) != 0 ) )
     {
         printf ( "ERROR: Command not recognized\n" );
         return false;
     }
     strcpy ( msg->request, token );
+    printf("First token: %s", token);
 
     /* Parse data to tmp */
     token = strtok ( NULL, DELIM_INFO );
     strcpy ( tmp, token );
+    printf("Second token: %s", token);
     token = strtok ( NULL, DELIM_INFO );
     memset ( tmp2, 0, sizeof ( tmp2 ) );
     strcpy ( tmp2, token );
+    printf("Third token: %s", token);
 
     /* Parse len */
     token = strtok ( NULL, DELIM_INFO );
+    printf("Fourth token: %s", token);
     msg->len = atoi ( token );
+    printf("Message length: %d\n", msg->len);
 
-    /* Parse tmp tokens */
-    token = strtok ( tmp, "|" );
-    strcpy ( msg->filenames[0], token );
-    for ( i = 1; i < msg->len; i++ )
-    {
-        token = strtok ( NULL, "|" );
-        strcpy ( msg->filenames[i], token );
-    }
+    if(strcmp(msg->request, CAP) != 0) {
+        /* Parse tmp tokens */
+        token = strtok ( tmp, "|" );
+        strcpy ( msg->filenames[0], token );
+        for ( i = 1; i < msg->len; i++ )
+        {
+            token = strtok ( NULL, "|" );
+            strcpy ( msg->filenames[i], token );
+        }
 
-    /* Parse tmp tokens */
-    token = strtok ( tmp2, "|" );
-    msg->cksums[0] = atoi ( token );
-    for ( i = 1; i < msg->len; i++ )
-    {
-        token = strtok ( NULL, "|" );
-        msg->cksums[i] = atoi ( token );
+        /* Parse tmp tokens */
+        token = strtok ( tmp2, "|" );
+        msg->cksums[0] = atoi ( token );
+        for ( i = 1; i < msg->len; i++ )
+        {
+            token = strtok ( NULL, "|" );
+            msg->cksums[i] = atoi ( token );
+        }
     }
+    printf("Returning from decode\n");
     return true;
 }

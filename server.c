@@ -197,7 +197,6 @@ void HandleClientRequest ( int clientSock )
 
             /* Send server file lengths to client */
             Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
-            printf("Diff message to client: %s\n", sndBuf);
             send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
         }	// end of DIFF
 
@@ -251,6 +250,57 @@ void HandleClientRequest ( int clientSock )
                 recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
             }
         }	// end of PULL
+        else if ( strcmp ( rcvInfo.request, CAP )  == 0 ) 
+        {
+            FILE *fp;
+            char filepath[FILEBUFSIZE];
+            int totBytesRead = 0;
+            int bytesRead = 0;
+
+            strcpy ( sndInfo.request, rcvInfo.request );
+
+            sndInfo.len = doCapServer ( &rcvInfo, &sndInfo, rcvInfo.len );
+            //sndInfo.len = 3;
+
+            /* Send server file lengths to client */
+            Encode ( &sndInfo, sndBuf, SNDBUFSIZE );
+            send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
+
+            /* Receive file list of unmatched files */
+            recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+            Decode ( rcvBuf, RCVBUFSIZE, &rcvInfo );
+
+            for ( i = 0; i < rcvInfo.len; i++ )
+            {
+                totBytesRead = 0;
+                memset ( filepath, 0, sizeof ( filepath ) );
+                strcat ( filepath, SERVER_DIR );
+                strcat ( filepath, rcvInfo.filenames[i] );
+                stat ( filepath, &s );
+
+                /* Send size */
+                memset ( sndBuf, 0, SNDBUFSIZE );
+                sprintf ( sndBuf, "%lu", s.st_size );
+                send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
+
+                /* Wait for acknowledgement */
+                recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+
+                fp = fopen ( filepath, "rb" );
+                while ( totBytesRead < s.st_size )
+                {
+                    memset ( sndBuf, 0, SNDBUFSIZE );
+                    bytesRead = fread ( sndBuf, 1, SNDBUFSIZE, fp );
+                    totBytesRead += bytesRead;
+                    send ( clientSock, sndBuf, bytesRead, 0 );
+                }
+
+                fclose ( fp );
+
+                /* Wait for acknowledge current file is done writing */
+                recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+            }
+        }   // end of CAP
     }
 }
 
