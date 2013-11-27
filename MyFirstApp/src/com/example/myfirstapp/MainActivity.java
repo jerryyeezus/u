@@ -5,14 +5,9 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-<<<<<<< HEAD
-=======
-import java.io.Flushable;
->>>>>>> dbe859d33d4c319bfadf3e154fd7516fda24848d
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.io.Writer;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -80,7 +75,6 @@ public class MainActivity extends Activity {
     }
     
     private class TCPSendMessage extends AsyncTask<String, Void, String> {
-<<<<<<< HEAD
     	
 		protected String doInBackground(String... arg0) {
 		    try {
@@ -280,96 +274,6 @@ public class MainActivity extends Activity {
 			Log.d("debugging", "IO Exception");
 		    }
 		    return null;
-=======
-
-	protected String doInBackground(String... arg0) {
-	    try {
-		// Create a new socket
-		clientSock = new Socket("130.207.114.21", 12003);
-
-		// Write the message as an output stream
-		PrintWriter out = new PrintWriter(new BufferedWriter(
-			new OutputStreamWriter(clientSock.getOutputStream())),
-			true);
-		Message commandMessage = new Message(arg0[0]);
-		String encodedMessage = new String();
-		encodedMessage = Message.encodeMessage(commandMessage);
-		out.println(encodedMessage);
-
-		// Receive the message from the server in unsigned bytes
-		DataInputStream input = new DataInputStream(
-			clientSock.getInputStream());
-		StringBuilder str = new StringBuilder();
-		for (int i = 0; i < 2048; i++) {
-		    str.append((char) input.readUnsignedByte());
-		}
-		Message rcvMessage = Message.decodeMessage(str.toString());
-		String[] diffNames = DiffClient.fileCompare(rcvMessage);
-
-		Message sndMessage = new Message("pull", diffNames,
-			rcvMessage.getCksums());
-		encodedMessage = Message.encodeMessage(sndMessage);
-		out.println(encodedMessage);
-		String musicDir = Environment
-			.getExternalStoragePublicDirectory(
-				Environment.DIRECTORY_MUSIC).toString();
-
-		// Begin huge PULL loop
-		for (int i = 0; i < diffNames.length; i++) {
-		    // Get file size
-		    String fileStr = new String();
-		    char readBuf;
-		    for (int j = 0; j < 2048; j++) {
-			readBuf = (char) input.readUnsignedByte();
-			if (readBuf != 0)
-			    fileStr += readBuf;
-			else {
-			    input.skip(2047 - j);
-			    break;
-			}
-		    }
-
-		    int fSize = Integer.parseInt(fileStr);
-
-		    // Acknowledge file size
-		    out.println(encodedMessage);
-
-		    String fpath = musicDir + "/"
-			    + rcvMessage.getFileNamesArray()[i];
-
-		    File file = new File(fpath);
-		    file.createNewFile();
-
-		    /*
-		     * Writer writer = new BufferedWriter(new
-		     * OutputStreamWriter( new FileOutputStream(fpath)));
-		     */
-		    DataOutputStream os = new DataOutputStream(
-			    new FileOutputStream(fpath));
-
-		    // char[] buffer = new char[2048];
-		    byte[] buffer = new byte[2048];
-		    int totBytesRead = 0;
-		    int bytesRead = 0;
-		    while (totBytesRead < fSize) {
-			Arrays.fill(buffer, (byte) 0);
-			bytesRead = input.read(buffer);
-			totBytesRead += bytesRead;
-			os.write(buffer, 0, bytesRead);
-		    }
-		    os.close();
-
-		    // Send file done ACK
-		    out.println(encodedMessage);
-
-		}
-
-		// Print diff string
-		String diffStr = new String();
-		for (int i = 0; i < diffNames.length; i++) {
-
-		    diffStr += diffNames[i] + "\n";
->>>>>>> dbe859d33d4c319bfadf3e154fd7516fda24848d
 		}
 		
 		protected void onPreExecute() {}
