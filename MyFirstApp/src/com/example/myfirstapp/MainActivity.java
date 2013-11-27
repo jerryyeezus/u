@@ -6,10 +6,6 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 <<<<<<< HEAD
-<<<<<<< HEAD
-=======
-import java.io.Flushable;
->>>>>>> dbe859d33d4c319bfadf3e154fd7516fda24848d
 =======
 import java.io.Flushable;
 >>>>>>> dbe859d33d4c319bfadf3e154fd7516fda24848d
@@ -331,49 +327,7 @@ public class MainActivity extends Activity {
 			    input.skip(2047 - j);
 			    break;
 			}
-<<<<<<< HEAD
-=======
 		    }
-
-		    int fSize = Integer.parseInt(fileStr);
-
-		    // Acknowledge file size
-		    out.println(encodedMessage);
-
-		    String fpath = musicDir + "/"
-			    + rcvMessage.getFileNamesArray()[i];
-
-		    File file = new File(fpath);
-		    file.createNewFile();
-
-		    /*
-		     * Writer writer = new BufferedWriter(new
-		     * OutputStreamWriter( new FileOutputStream(fpath)));
-		     */
-		    DataOutputStream os = new DataOutputStream(
-			    new FileOutputStream(fpath));
-
-		    // char[] buffer = new char[2048];
-		    byte[] buffer = new byte[2048];
-		    int totBytesRead = 0;
-		    int bytesRead = 0;
-		    while (totBytesRead < fSize) {
-			Arrays.fill(buffer, (byte) 0);
-			bytesRead = input.read(buffer);
-			totBytesRead += bytesRead;
-			os.write(buffer, 0, bytesRead);
->>>>>>> dbe859d33d4c319bfadf3e154fd7516fda24848d
-		    }
-		    os.close();
-
-		    // Send file done ACK
-		    out.println(encodedMessage);
-
-		}
-
-		// Print diff string
-		String diffStr = new String();
-		for (int i = 0; i < diffNames.length; i++) {
 
 		    int fSize = Integer.parseInt(fileStr);
 
