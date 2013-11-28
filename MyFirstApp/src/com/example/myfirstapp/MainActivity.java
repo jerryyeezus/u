@@ -28,9 +28,10 @@ import android.widget.Spinner;
 public class MainActivity extends Activity {
 
     public final static String EXTRA_MESSAGE = "com.example.myfirstapp.MESSAGE";
-    private Socket clientSock = null;
+    public static Socket clientSock = null;
     public Spinner capSpinner;
-    public boolean isConnected;
+    public static boolean isConnected = false;
+    public static PrintWriter out = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +43,11 @@ public class MainActivity extends Activity {
 		this, R.array.cap_array, android.R.layout.simple_spinner_item);
 	adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 	capSpinner.setAdapter(adapter);
+    }
+
+    @Override
+    protected void onResume() {
+	super.onResume();
     }
 
     @Override
@@ -83,17 +89,19 @@ public class MainActivity extends Activity {
 		if (!isConnected) {
 		    // clientSock = new Socket("130.207.114.21", 12003);
 		    clientSock = new Socket("192.168.1.68", 12003);
+		    out = new PrintWriter(
+			    new BufferedWriter(new OutputStreamWriter(
+				    clientSock.getOutputStream())), true);
 		    isConnected = true;
 		}
 
 		// Write the message as an output stream
-		PrintWriter out = new PrintWriter(new BufferedWriter(
-			new OutputStreamWriter(clientSock.getOutputStream())),
-			true);
+		/*
+		 * PrintWriter out = new PrintWriter(new BufferedWriter( new
+		 * OutputStreamWriter(clientSock.getOutputStream())), true);
+		 */
 
 		String capValue = capSpinner.getSelectedItem().toString();
-		Log.d("debugging", "Request: " + arg0[0]);
-		Log.d("debugging", "Cap spinner value: " + capValue);
 
 		Message commandMessage;
 
@@ -118,7 +126,6 @@ public class MainActivity extends Activity {
 		    str.append((char) input.readUnsignedByte());
 		}
 		Message rcvMessage = Message.decodeMessage(str.toString());
-		Log.d("debugging", "Received message: " + rcvMessage.toString());
 
 		if (rcvMessage.getRequest().equals("list")) {
 		    return rcvMessage.getFilenames().length
@@ -225,36 +232,33 @@ public class MainActivity extends Activity {
 				    Environment.DIRECTORY_MUSIC).toString();
 
 		    // Begin huge PULL loop
+		    String tmp;
+		    int fSize;
+		    byte[] sizeBuf = new byte[2048];
+		    String fpath;
+		    StringBuilder fpathBuilder;
 		    for (int i = 0; i < capNames.length; i++) {
-			// Get file size
-			// char readBuf;
-
-			byte[] sizeBuf = new byte[2048];
+			Arrays.fill(sizeBuf, (byte) 0);
 			input.read(sizeBuf);
-
-			/*
-			 * for (int j = 0; j < 2048; j++) { readBuf = (char)
-			 * input.readUnsignedByte();
-			 * 
-			 * if (readBuf != 0) fileStr += readBuf; else {
-			 * input.skip(2047 - j); break; } }
-			 */
-
 			int curByte = 0;
 			if (sizeBuf[0] != '0') {
 			    while (sizeBuf[curByte] != 0) {
 				curByte++;
 			    }
 			}
-			String tmp = new String(sizeBuf, 0, curByte, "ASCII");
+			tmp = new String(sizeBuf, 0, curByte, "ASCII");
 
-			int fSize = curByte == 0 ? 0 : Integer.parseInt(tmp);
+			fSize = curByte == 0 ? 0 : Integer.parseInt(tmp);
 
 			// Acknowledge file size
 			out.println(encodedMessage);
 
-			String fpath = musicDir + "/"
-				+ rcvMessage.getFileNamesArray()[i];
+			fpathBuilder = new StringBuilder();
+			fpathBuilder.append(musicDir);
+			fpathBuilder.append("/");
+			fpathBuilder.append(rcvMessage.getFileNamesArray()[i]);
+
+			fpath = fpathBuilder.toString();
 
 			if (fSize > 0) {
 			    File file = new File(fpath);

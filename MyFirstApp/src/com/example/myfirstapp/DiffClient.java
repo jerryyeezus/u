@@ -107,7 +107,6 @@ public class DiffClient {
     	try {
     		//Open file input stream for given music file
     		FileInputStream inputStream = new FileInputStream(filepath);
-    		Log.d("debugging", "Filepath: " + filepath);
     		
     		//Initialize MD5 digest and byte array for reading data
     		MessageDigest md = MessageDigest.getInstance("MD5");
@@ -124,7 +123,6 @@ public class DiffClient {
     		//Add the hashed values, byte by byte to get a checksum
     		for(int i = 0; i < fileBytes.length; i++) {
     			checksum += (fileBytes[i] & 0xFF);
-    			Log.d("debugging", "Unsigned Byte value at i: " + (fileBytes[i] & 0xFF));
     		}
     		
     		//Close input stream and return calculated checksum
@@ -132,13 +130,10 @@ public class DiffClient {
     		return checksum;
     	}
     	catch(FileNotFoundException fnfe) {
-    		Log.d("debugging", "FNF Exception");
     	}
     	catch(IOException ioe) {
-    		Log.d("debugging", "IO Exception");
     	}
     	catch(NoSuchAlgorithmException nsae) {
-    		Log.d("debugging", "No such algorithm exception on digest");
     	}
     	return checksum;
     }
