@@ -29,7 +29,7 @@ size_t Encode ( const msg_t *msg, uint8_t *outBuf, const size_t bufSize )
         count += sprintf ( outBuf + count, "%d|", msg->cksums[i] );
     }
 
-    sprintf ( outBuf + count, "\t%d", msg->len );
+    sprintf ( outBuf + count, "\t%d\t", msg->len );
     return 1;
 }
 

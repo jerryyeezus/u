@@ -55,7 +55,8 @@ public class Message {
 		String request = st.nextToken();
 		String filenames = st.nextToken();
 		String cksums = st.nextToken();
-		int len = Integer.valueOf(st.nextToken().substring(0,1));
+		String temp = st.nextToken();
+		int len = Integer.valueOf(temp);
 		
 		// Populate filenames
 		st = new StringTokenizer(filenames, "|");

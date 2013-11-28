@@ -258,8 +258,9 @@ void HandleClientRequest ( int clientSock )
             int bytesRead = 0;
 
             strcpy ( sndInfo.request, rcvInfo.request );
-
+            printf("About to doCapServer\n");
             sndInfo.len = doCapServer ( &rcvInfo, &sndInfo, rcvInfo.len );
+            printf("doCapServer done\n");
             //sndInfo.len = 3;
 
             /* Send server file lengths to client */
@@ -278,27 +279,38 @@ void HandleClientRequest ( int clientSock )
                 strcat ( filepath, rcvInfo.filenames[i] );
                 stat ( filepath, &s );
 
-                /* Send size */
-                memset ( sndBuf, 0, SNDBUFSIZE );
-                sprintf ( sndBuf, "%lu", s.st_size );
-                send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
-
-                /* Wait for acknowledgement */
-                recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
-
-                fp = fopen ( filepath, "rb" );
-                while ( totBytesRead < s.st_size )
+                if ( stat ( filepath, &s ) == 0 )
                 {
+                    /* Send size */
                     memset ( sndBuf, 0, SNDBUFSIZE );
-                    bytesRead = fread ( sndBuf, 1, SNDBUFSIZE, fp );
-                    totBytesRead += bytesRead;
-                    send ( clientSock, sndBuf, bytesRead, 0 );
+                    sprintf ( sndBuf, "%lu", s.st_size );
+                    send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
+
+                    /* Wait for acknowledgement */
+                    recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+
+                    fp = fopen ( filepath, "rb" );
+                    while ( totBytesRead < s.st_size )
+                    {
+                        memset ( sndBuf, 0, SNDBUFSIZE );
+                        bytesRead = fread ( sndBuf, 1, SNDBUFSIZE, fp );
+                        totBytesRead += bytesRead;
+                        send ( clientSock, sndBuf, bytesRead, 0 );
+                    }
+
+                    fclose ( fp );
+
+                    /* Wait for acknowledge current file is done writing */
+                    recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
                 }
-
-                fclose ( fp );
-
-                /* Wait for acknowledge current file is done writing */
-                recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+                else {
+                    printf("File not found on server.\n");
+                    memset ( sndBuf, 0, SNDBUFSIZE );
+                    sprintf ( sndBuf, "%lu", totBytesRead );
+                    send( clientSock, sndBuf, SNDBUFSIZE, 0 );
+                    recv( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+                    recv( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+                }
             }
         }   // end of CAP
     }
