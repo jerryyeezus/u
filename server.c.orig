@@ -250,7 +250,7 @@ void HandleClientRequest ( int clientSock )
                 recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
             }
         }	// end of PULL
-        else if ( strcmp ( rcvInfo.request, CAP )  == 0 )
+        else if ( strcmp ( rcvInfo.request, CAP )  == 0 ) 
         {
             FILE *fp;
             char filepath[FILEBUFSIZE];
@@ -301,14 +301,13 @@ void HandleClientRequest ( int clientSock )
                     /* Wait for acknowledge current file is done writing */
                     recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
                 }
-                else
-                {
-                    printf ( "File not found on server.\n" );
+                else {
+                    printf("File not found on server.\n");
                     memset ( sndBuf, 0, SNDBUFSIZE );
                     sprintf ( sndBuf, "%lu", totBytesRead );
-                    send ( clientSock, sndBuf, SNDBUFSIZE, 0 );
-                    recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
-                    recv ( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+                    send( clientSock, sndBuf, SNDBUFSIZE, 0 );
+                    recv( clientSock, rcvBuf, RCVBUFSIZE, 0 );
+                    recv( clientSock, rcvBuf, RCVBUFSIZE, 0 );
                 }
             }
         }   // end of CAP

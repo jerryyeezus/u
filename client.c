@@ -11,9 +11,9 @@
 #define INPUTSIZE 12
 
 //char *servIP = "130.207.114.21";
-char *servIP = "localhost";
+//char *servIP = "localhost";
 
-
+char *servIP = "192.168.1.68";
 /* The main function */
 int main ( int argc, char *argv[] )
 {

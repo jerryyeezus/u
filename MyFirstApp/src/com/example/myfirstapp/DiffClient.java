@@ -52,9 +52,7 @@ public class DiffClient {
 		//and placing server files with no match in diffList array
 		for (int i = 0; i < serverSums.length; i++) {
 		    isFound = false;
-		    Log.d("debugging", "Server: " + serverNames[i]);
 		    for (int j = 0; j < clientSums.length; j++) {
-				Log.d("debugging", "Client: " + clientNames[j]);
 				if (serverSums[i] == clientSums[j]) {
 				    isFound = true;
 				    break;
