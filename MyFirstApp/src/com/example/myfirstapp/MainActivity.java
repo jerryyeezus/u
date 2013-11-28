@@ -18,7 +18,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -87,32 +86,27 @@ public class MainActivity extends Activity {
 	    try {
 		// Create a new socket if not connected already
 		if (!isConnected) {
-		    // clientSock = new Socket("130.207.114.21", 12003);
-		    clientSock = new Socket("192.168.1.68", 12003);
+		    clientSock = new Socket("130.207.114.23", 12003);
+		    //clientSock = new Socket("192.168.1.68", 12003);
 		    out = new PrintWriter(
 			    new BufferedWriter(new OutputStreamWriter(
 				    clientSock.getOutputStream())), true);
 		    isConnected = true;
 		}
 
-		// Write the message as an output stream
-		/*
-		 * PrintWriter out = new PrintWriter(new BufferedWriter( new
-		 * OutputStreamWriter(clientSock.getOutputStream())), true);
-		 */
-
-		String capValue = capSpinner.getSelectedItem().toString();
-
 		Message commandMessage;
 
-		if (!capSpinner.getSelectedItem().toString()
-			.equals("Data Cap in MB (if applicable)")
-			&& arg0[0].equals("cap")) {
-		    commandMessage = new Message(arg0[0],
-			    Integer.parseInt(capSpinner.getSelectedItem()
-				    .toString()));
-		} else {
-		    commandMessage = new Message(arg0[0]);
+		if (!capSpinner.getSelectedItem().toString().equals("Data Cap in MB (if applicable)") && arg0[0].equals("cap")) {
+		    commandMessage = new Message(arg0[0], Integer.parseInt(capSpinner.getSelectedItem().toString()));
+		} 
+		else if(capSpinner.getSelectedItem().toString().equals("Data Cap in MB (if applicable)") && arg0[0].equals("cap")) {
+			return "Please select a cap value and try again";
+		}
+		else if(!(arg0[0].equals("list") || arg0[0].equals("diff") || arg0[0].equals("pull") || arg0[0].equals("leave"))){
+			return "Invalid command";
+		}
+		else { 
+			commandMessage = new Message(arg0[0]);
 		}
 		String encodedMessage = new String();
 		encodedMessage = Message.encodeMessage(commandMessage);
@@ -176,14 +170,9 @@ public class MainActivity extends Activity {
 			File file = new File(fpath);
 			file.createNewFile();
 
-			/*
-			 * Writer writer = new BufferedWriter(new
-			 * OutputStreamWriter( new FileOutputStream(fpath)));
-			 */
 			DataOutputStream os = new DataOutputStream(
 				new FileOutputStream(fpath));
 
-			// char[] buffer = new char[2048];
 			byte[] buffer = new byte[2048];
 			int totBytesRead = 0;
 			int bytesRead = 0;
@@ -214,6 +203,7 @@ public class MainActivity extends Activity {
 
 		else if (rcvMessage.getRequest().equals("leave")) {
 		    clientSock.close();
+		    finish();
 		    return "Disconnected from server. Bye.";
 		}
 
@@ -302,7 +292,7 @@ public class MainActivity extends Activity {
 		e.printStackTrace();
 	    } catch (IOException e) {
 		e.printStackTrace();
-		return "Couldn't connect";
+		return "Couldn't connect to server.";
 	    }
 	    return null;
 	}

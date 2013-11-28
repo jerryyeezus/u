@@ -89,8 +89,6 @@ int main ( int argc, char *argv[] )
             exit ( 1 );
         }
 
-        printf ( "Client connected on socket %d (thread %lu)\n", clientSock, ( unsigned long int ) threadID );
-
         /* Open server log to write connection information */
         logPtr = fopen ( "serverLog.txt", "a" );
 
@@ -303,7 +301,6 @@ void HandleClientRequest ( int clientSock )
                 }
                 else
                 {
-                    printf ( "File not found on server.\n" );
                     memset ( sndBuf, 0, SNDBUFSIZE );
                     sprintf ( sndBuf, "%lu", totBytesRead );
                     send ( clientSock, sndBuf, SNDBUFSIZE, 0 );

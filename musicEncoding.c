@@ -48,22 +48,17 @@ bool Decode ( uint8_t *inBuf, const size_t mSize, msg_t *msg )
         return false;
     }
     strcpy ( msg->request, token );
-    printf("First token: %s", token);
 
     /* Parse data to tmp */
     token = strtok ( NULL, DELIM_INFO );
     strcpy ( tmp, token );
-    printf("Second token: %s", token);
     token = strtok ( NULL, DELIM_INFO );
     memset ( tmp2, 0, sizeof ( tmp2 ) );
     strcpy ( tmp2, token );
-    printf("Third token: %s", token);
 
     /* Parse len */
     token = strtok ( NULL, DELIM_INFO );
-    printf("Fourth token: %s", token);
     msg->len = atoi ( token );
-    printf("Message length: %d\n", msg->len);
 
     if(strcmp(msg->request, CAP) != 0) {
         /* Parse tmp tokens */
@@ -84,6 +79,5 @@ bool Decode ( uint8_t *inBuf, const size_t mSize, msg_t *msg )
             msg->cksums[i] = atoi ( token );
         }
     }
-    printf("Returning from decode\n");
     return true;
 }

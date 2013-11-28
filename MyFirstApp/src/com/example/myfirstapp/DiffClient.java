@@ -9,7 +9,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 import android.os.Environment;
-import android.util.Log;
 
 public class DiffClient {
 

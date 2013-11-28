@@ -53,8 +53,6 @@ int doDiffServer ( msg_t *rcvInfo, msg_t *sndInfo )
                 MD5_Final(c, &mdContext);
                 for(j = 0; j < MD5_DIGEST_LENGTH; j++) {
                     checksum += c[j];
-                    /*sprintf(temp, "%02x", c[j]);
-                    printf("temp hash: %s\n", temp);*/
                 }
                 fclose(fp);
 
@@ -121,8 +119,6 @@ int doDiffClient ( msg_t *rcvInfo, msg_t *sndInfo )
                 MD5_Final(c, &mdContext);
                 for(j = 0; j < MD5_DIGEST_LENGTH; j++) {
                     checksum += c[j];
-                    /*sprintf(temp, "%02x", c[j]);
-                    printf("temp hash: %s\n", temp);*/
                 }
                 fclose(fp);
 
@@ -155,9 +151,7 @@ int doDiffClient ( msg_t *rcvInfo, msg_t *sndInfo )
 }
 
 int doCapServer( msg_t *rcvInfo, msg_t *sndInfo, int capSize ) {
-    printf("In doCapServer\n");
     capInfo *capNodes = getAllowedFiles();
-    printf("Got allowed files\n");
     capInfo *ptr = capNodes;
 
     int i = 0;
@@ -165,12 +159,9 @@ int doCapServer( msg_t *rcvInfo, msg_t *sndInfo, int capSize ) {
     capSize *= 1000000;
     while ( ptr != NULL )
     {
-        //printf("Size: %d\n", size);
-        //printf("Current file size: %d\n", ptr->size);
         if((size + ptr->size) < capSize) {
             strcpy(sndInfo->filenames[i++], ptr->name);
             size += ptr->size;
-            printf("File added to list: %s\n", ptr->name);
         }
         ptr = ptr->next;
     }
@@ -249,7 +240,6 @@ capInfo *getAllowedFiles()
     stat ( iTunesXML, &s );
     FILE *fp = fopen ( iTunesXML, "r" );
     char *xmlBuffer = malloc ( s.st_size );
-    printf("XML File Opened\n");
 
     int totBytesRead = 0, bytesRead = 0;
     while ( totBytesRead < s.st_size )
@@ -258,7 +248,6 @@ capInfo *getAllowedFiles()
         totBytesRead += bytesRead;
     }
     fclose ( fp );
-    printf("XML File Read\n");
 
     char *nextSong = xmlBuffer;
 
@@ -281,7 +270,6 @@ capInfo *getAllowedFiles()
         free ( sizeBuf );
         free ( cntBuf );
     }
-    printf("File parsed\n");
 
     free ( xmlBuffer );
     return capNodes;
